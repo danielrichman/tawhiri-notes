@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ramblings (Daniel 2013-11-01)</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="css/misc.css" rel="stylesheet" media="screen">
+</head>
+<body>
+    <h1>Post 2013-10-29 meeting remarks</h1>
+
+    <h2>Coordinates</h2>
+
+    <p>Need to have a chat about latitude, longitude vs Cartesians, map projections etc.</p>
+
+    <ul>
+    <li>have designed under assumption that we'll keep current position and "something" somewhere will be responsible for converting Cartesian velocity (which is what all the models will produce) into changes to Geographic coordinates (have currently said that the integrator should be responsible)</li>
+    <li>inconsistent?</li>
+    <li>very possible that the balloon will move far enough to make using one projection infeasible</li>
+    </ul>
+
+    <h2>Design Doubts</h2>
+
+    <p>I've been having doubts about the <code>chain</code> of functions idea from the meeting</p>
+
+    <p>It involves letting each model in turn modify a state object, with attributes</p>
+
+    <ul>
+    <li><code>x</code> - previous position</li>
+    <li><code>x_dot</code> - previous velocity</li>
+    <li><code>t</code> - now</li>
+    <li><p><code>new_x_dot</code> - new velocity for integrator to use</p>
+
+    <p>This is initialised to zero and may be modified by any function in the chain as it fits.</p></li>
+    </ul>
+
+    <p>This...</p>
+
+    <ul>
+    <li>... isn't particularly intuitive.
+    <ul>
+    <li>The functions are mapping <code>State -&gt; State</code> yet it's not actually mapping to the new state, it's modifying the velocity which the integrator will then use to produce the new state.</li>
+    <li>This ultimately amounts to re-writing a DE as <code>f(g(h(i(j(x)))))</code> which is a bit ugly.</li>
+    </ul></li>
+    <li>... doesn't really help 2nd order stuff?
+    <ul>
+    <li>is a function in the chain responsible for <code>x_dot += x_dotdot * dt</code> or is the integrator?</li>
+    <li>the integrator may need to know stuff about the order?</li>
+    </ul></li>
+    <li>... complicates /all/ models (the majority of which are just <code>(x, t) -&gt; x_dot</code>) greatly.</li>
+    </ul>
+
+    <p>doesn't really solve the problems we want.</p>
+</body>
+</html>

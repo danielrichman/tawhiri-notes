@@ -1,12 +1,14 @@
+# Post 2013-10-29 meeting remarks
+
+## Coordinates
+
 Need to have a chat about latitude, longitude vs Cartesians, map projections etc.
 
   - have designed under assumption that we'll keep current position and "something" somewhere will be responsible for converting Cartesian velocity (which is what all the models will produce) into changes to Geographic coordinates (have currently said that the integrator should be responsible)
   - inconsistent?
   - very possible that the balloon will move far enough to make using one projection infeasible
 
-
----
-
+## Design Doubts
 
 I've been having doubts about the `chain` of functions idea from the meeting
 

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Design Draft (2013-10-29)</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="css/misc.css" rel="stylesheet" media="screen">
+    <link href="css/pygments.css" rel="stylesheet" media="screen">
+</head>
+<body>
+
+    <h1>Core Predictor Design</h1>
+
+    <h2>Integration</h2>
+
+    <p>The basic idea is to do something along the lines of</p>
+
+<div class="highlight"><pre><span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+    <span class="n">x_dot</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">+=</span> <span class="n">x_dot</span> <span class="o">*</span> <span class="n">dt</span>
+</pre></div>
+
+    <p>which is in fact the basic principle of <code>scipy.integrate.odeint</code> (though note (below) that we hold position as latitude, longitude but f returns a Cartesian velocity).</p>
+
+    <p>However, we want to be able to swap "bits" of f out; that is, take our pick from some "<strong>models</strong>":</p>
+
+    <ul>
+        <li>wind</li>
+        <li>
+            altitude models
+            <ul>
+                <li>constant up, <code>x^-n</code> down</li>
+                <li>floating balloon</li>
+            </ul>
+        </li>
+        <li>something more exotic like parachute glide.</li>
+    </ul>
+
+    <p>For the majority of cases, taking <code>f</code> (the function the integrator will use) as linear combinations of models, all with signature (<code>(x, t) -&gt; x_dot</code>), will suffice.</p>
+
+    <p>At the start, some configuration is loaded, and a function is (dynamically) created; simply put:</p>
+
+<div class="highlight"><pre><span class="k">def</span> <span class="nf">make_f</span><span class="p">(</span><span class="n">models</span><span class="p">):</span> <span class="k">return</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">sum</span><span class="p">(</span><span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">models</span><span class="p">)</span>
+</pre></div>
+
+    <h2>Signature of <code>f</code></h2>
+
+<div class="highlight"><pre><span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x_dot</span>
+</pre></div>
+
+    <p>where</p>
+
+    <ul>
+        <li><code>x = [latitude, longitude, altitude]</code> (list; maybe rank-1 numpy array; maybe object with helper methods to convert to/from map projections)</li>
+        <li>
+            <p><code>t</code> is an object with attributes</p>
+
+            <ul>
+                <li>
+                    <p><code>now</code> - absolute time, a Python <code>datetime.datetime</code></p>
+
+                    <p>this might be quite expensive to create and rarely used, so could be created only when needed?</p>
+                </li>
+                <li><code>flight_time</code> - time since the prediction started, in seconds (float)</li>
+                <li><code>dt_past</code> - time since the last step</li>
+            </ul>
+        </li>
+        <li>
+            <p><code>x_dot = [u_dot, v_dot, altitude_dot]</code> (the returned value; list etc.)</p>
+
+            <p><code>u_dot</code> and <code>v_dot</code> are velocities northwards and eastwards wrt. the current position; the integrator is therefore responsible for converting this into changes to geographic coordinates.</p>
+        </li>
+    </ul>
+
+    <h3>Termination of flights</h3>
+
+    <p>To terminate the flight, the model should raise the <code>tawhiri.models.StopIntegrating</code> exception (which the integrator will catch and deal with).</p>
+
+    <h2>Simple models</h2>
+
+    <p>The most basic model would be a function</p>
+
+<div class="highlight"><pre><span class="k">def</span> <span class="nf">my_model</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span> <span class="k">return</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+</pre></div>
+
+    <h2>Complex models</h2>
+
+    <p>Thanks to callable objects, we can keep the simple concept of a model being a function, but add configuration and state.</p>
+
+<div class="highlight"><pre><span class="k">class</span> <span class="nc">Model</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">settings</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">settings</span> <span class="o">=</span> <span class="n">settings</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="bp">True</span>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s">&quot;something&quot;</span><span class="p">]]</span>
+</pre></div>
+
+    <p>This does mean that the model functions are no longer pure as they can have the side effects of changing their internal state:</p>
+
+    <ul>
+        <li>This would mean the integrator must (at the very least) promise to only increase <code>t</code> on each call to the model.</li>
+        <li>The only real solution would be to make model functions (<code>(x, t, state) -&gt; (x_dot, state)</code>). Thoughts?</li>
+    </ul>
+
+</body>
+</html>

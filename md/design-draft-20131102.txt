@@ -78,4 +78,8 @@ class Model(object):
             return [4, 5, self.settings["something"]]
 ```
 
+This does mean that the model functions are no longer pure as they can have the side effects of changing their internal state:
+
+  - This would mean the integrator must (at the very least) promise to only increase `t` on each call to the model.
+  - The only real solution would be to make model functions (`(x, t, state) -> (x_dot, state)`). Thoughts?
 

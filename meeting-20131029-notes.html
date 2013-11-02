@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Predictor meeting 2013/10/29 notes</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="css/misc.css" rel="stylesheet" media="screen">
+</head>
+
+<body>
+  <h1>Predictor meeting 2013/10/29 notes</h1>
+
+  <h2>Python module layout</h2>
+
+  <pre>tawhiri
+    .wind
+        .Dataset
+        .downloader - done; for our purposes now a blank box daemon
+        .integration (core loops; forwards euler, rk9; essentially the main method)
+        .chains (chain setup, perhaps needs to read config)
+        .models ("items that go in the chain"; altitude models and other; inertia-less "follows windspeed exactly"; parachute glide)</pre>
+
+  <h2>Chain idea</h2>
+
+  <p>Want to be able to swap modular bits in and out, e.g.,</p>
+
+  <ul>
+    <li>altitude models (straight up terminal velocity down; float; starting at altitude; etc.)</li>
+
+    <li>horizontal velocity sources (wind data, parachute glide) but: combining these things might not be linear: can't have a series of functions output x_dot and sum them up. So we guessed at the best balance between generality and complexity would be to have a chain of functions:
+      <pre>while True:
+    new_x_dot  = chain(x, xdot)
+    x += x * dt</pre>
+      where `chain` is specified in advance - it calls functions in turn
+    </li>
+
+    <li>look up wind u, v (sets horizontal velocity)</li>
+
+    <li>altitude model (sets vertical velocity, or sets "finished" -- see State object)</li>
+
+    <li>something more complex that takes old velocity, velocity set by previous chain items and changes some stuff (example from meeting was 'chute glide)</li>
+  </ul>
+
+  <h2>Documentation</h2>
+
+  <ul>
+    <li>"code ownership" - we're going to graduate, and we want to make it easy for the people after us to understand how it works as if they wrote it (well, that's not possible, but as much as we reasonably can)</li>
+
+    <li>overview of design; i.e., chain idea etc. and short explanation</li>
+
+    <li>docstrings</li>
+  </ul>
+
+  <h2>Misc</h2>
+
+  <ul>
+    <li>use git. Git is good. If you don't know how to use git, ask, someone will happily evangelise</li>
+
+    <li>Github usernames - need them to add to <a href="https://github.com/cuspaceflight">https://github.com/cuspaceflight</a></li>
+
+    <li>Licensing?
+
+      <ul>
+        <li>GPL3? can BSD later</li>
+
+        <li>if we leave, this more or less permanently ties the project to GPL3</li>
+
+        <li>Software as a Service so CUSF can sort of do what it likes anyway</li>
+
+        <li>File headers: <code>Copyright 2013 (name)</code> + <a href="http://www.gnu.org/licenses/gpl-howto.html">GPL3 short pg</a></li>
+
+        <li>CUSF as a society cannot own copyright (we think)</li>
+      </ul>
+    </li>
+
+    <li>Daniel to set up testing server and give people access</li>
+
+    <li>meet in 2 weeks</li>
+  </ul>
+
+  <h2>Overview of current code</h2>
+
+  <ul>
+    <li>notes: <a href="http://www.cusf.co.uk/wiki/tawhiri:start">http://www.cusf.co.uk/wiki/tawhiri:start</a> (TODO: put this text up there)</li>
+
+    <li>C overview / map <a href="http://www.cusf.co.uk/wiki/tawhiri:current_predictor">http://www.cusf.co.uk/wiki/tawhiri:current_predictor</a></li>
+
+    <li>one shot predictions <a href="http://predict.habhub.org">http://predict.habhub.org</a>
+
+      <ul>
+        <li>PHP -&gt; python script (handles forking, setting up IO) -&gt; C program</li>
+
+        <li><a href="https://github.com/cuspaceflight/cusf-standalone-predictor">https://github.com/cuspaceflight/cusf-standalone-predictor</a> is the old version; easiest to read through</li>
+
+        <li>but the current live version is actually <a href="https://github.com/cuspaceflight/tawhiri-oldui-juryrig">https://github.com/cuspaceflight/tawhiri-oldui-juryrig</a> (PHP in predict/, Python is predict.py, C in pred_src/) <small>(alll the <a href="https://github.com/cuspaceflight/tawhiri-oldui-juryrig/commit/b44e2e587a445f2ec2be5910a569d7ddc7da1d25">deletions</a></small></li>
+      </ul>
+    </li>
+
+    <li>hourly predictions <a href="http://predict.habhub.org/hourly/cambridge">http://predict.habhub.org/hourly/cambridge</a>
+
+      <ul>
+        <li>https://github.com/cuspaceflight/cusf-landing-prediction (old version)</li>
+
+        <li>the current live version is actually <a href="https://github.com/cuspaceflight/tawhiri-oldui-juryrig">https://github.com/cuspaceflight/tawhiri-oldui-juryrig</a>
+
+          <ul>
+            <li><code>hourly/daemon.py</code><br>
+            this is responsible for running predictions. it uses inotify to watch for changes in tawhiri/datasets directory or hourly/scenarios and re-runs predictions as soon as either changes.<br>
+            "re-runs" means runs the predictions and writes JSON to a static file, which is served by the web server</li>
+
+            <li><code>hourly/editor</code> - small python (<a href="http://flask.pocoo.org/">Flask</a>) application to edit (limited parts of) scenario files</li>
+
+            <li><code>hourly/web/lib</code> - javascript, css, html. Javascript fetches aforementioned AJAX via CSS.</li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+
+    <li>live predictions <a href="http://spacenear.us/tracker">http://spacenear.us/tracker</a>
+
+      <ul>
+        <li>some PHP that pulls settings out of the current trace and invokes the C binary</li>
+
+        <li>that whole site is long overdue a rewrite, incidentally.</li>
+      </ul>
+    </li>
+  </ul>
+
+  <h2>UI Features we have currently</h2>
+
+  <ul>
+    <li>one shot predictions <a href="http://predict.habhub.org">http://predict.habhub.org</a></li>
+
+    <li>hourly predictions <a href="http://predict.habhub.org/hourly/cambridge">http://predict.habhub.org/hourly/cambridge</a></li>
+
+    <li>live predictions <a href="http://spacenear.us/tracker">http://spacenear.us/tracker</a></li>
+
+    <li>wishlist
+
+      <ul>
+        <li>monte carlo? heatmap? polygon</li>
+
+        <li>automaticly AJAX and fill out launch altitude from ground altitude level dataset? unnecessary - could just submit "altitude=auto" to the API and it does it.</li>
+      </ul>
+    </li>
+  </ul>
+
+  <h3>Design</h3>
+
+  <p>Only one server side bit: single API call "run prediction" given launch parameters, returns a path (straight away? needn't save to file
+  <small>may need to check performance of this; would have to hold it in memory</small>)</p>
+
+  <h2>People</h2>
+
+  <ul>
+    <li>UI: Matthew <code>mcj33</code>, Zeyi <code>zl291</code>, Ollie <code>ojgl2</code></li>
+
+    <li>Ground Altitude: Priyesh <code>pp384</code></li>
+
+    <li>Prediction API: Priyesh <code>pp384</code></li>
+
+    <li>Integration and models: <code>gd365</code> <code>db590</code></li>
+  </ul>
+
+  <h2>Ground Altitude stuff</h2>
+
+  <ul>
+    <li>Find a dataset and write something that downloads it</li>
+
+    <li>maybe an API so that the web UI can fill out the launch alt box <small>probably unnecessary, see above</small></li>
+
+    <li>function to get the ground altitude that the predictor can use.</li>
+  </ul>
+
+  <h2>Quick tasks</h2>
+
+  <p>by weekend (1<sup>st</sup>/2<sup>nd</sup>)plx.</p>
+
+  <p>Daniel <code>djr61</code></p>
+
+  <ul>
+    <li>function signatures for chain items</li>
+
+    <li>implement basic linear wind interpolation by copying from C (i.e., the method tawhiri.wind.Dataset.wind(time lat lon alt))</li>
+
+    <li>draft state object.</li>
+  </ul>
+
+  <p>Priyesh <code>pp384</code></p>
+
+  <ul>
+    <li>mock up / define what the API will look like so the UI guys can get started. Can return junk data or whatever. Maybe data needs to vary (sensibly?) for hourlies</li>
+  </ul>
+
+  <h2>State object</h2>
+
+  <ul>
+    <li>to be passed from chain function to chain function</li>
+
+    <li>needs to contain
+
+      <ul>
+        <li>old position</li>
+
+        <li>old velocity</li>
+
+        <li>should we exit the loop now (-- should this be an exception raised by chain items instead?)</li>
+      </ul>
+    </li>
+
+    <li>can add attributes later if we need it; ideas: wind data for current position could be cached on state object if two items in the chain need it.</li>
+  </ul>
+</body>
+</html>
