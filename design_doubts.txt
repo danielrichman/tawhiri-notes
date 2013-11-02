@@ -1,0 +1,32 @@
+Need to have a chat about latitude, longitude vs Cartesians, map projections etc.
+
+  - have designed under assumption that we'll keep current position and "something" somewhere will be responsible for converting Cartesian velocity (which is what all the models will produce) into changes to Geographic coordinates (have currently said that the integrator should be responsible)
+  - inconsistent?
+  - very possible that the balloon will move far enough to make using one projection infeasible
+
+
+---
+
+
+I've been having doubts about the `chain` of functions idea from the meeting
+
+It involves letting each model in turn modify a state object, with attributes
+
+  - `x` - previous position
+  - `x_dot` - previous velocity
+  - `t` - now
+  - `new_x_dot` - new velocity for integrator to use
+
+    This is initialised to zero and may be modified by any function in the chain as it fits.
+
+This...
+
+  - ... isn't particularly intuitive.
+      - The functions are mapping `State -> State` yet it's not actually mapping to the new state, it's modifying the velocity which the integrator will then use to produce the new state.
+      - This ultimately amounts to re-writing a DE as `f(g(h(i(j(x)))))` which is a bit ugly.
+  - ... doesn't really help 2nd order stuff?
+      - is a function in the chain responsible for `x_dot += x_dotdot * dt` or is the integrator?
+      - the integrator may need to know stuff about the order?
+  - ... complicates /all/ models (the majority of which are just `(x, t) -> x_dot`) greatly.
+
+doesn't really solve the problems we want.
