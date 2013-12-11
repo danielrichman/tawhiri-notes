@@ -30,10 +30,10 @@ This is cleaner, and allows us to use more interesting integration methods if we
 
 We want to be able to swap "bits" of `f` out; that is, take our pick from some "**models**":
 
-  - wind velocity
+  - wind velocity,
   - something more exotic like parachute glide.
 
-For the majority of cases, taking `f` (the function the integrator will use) as linear combinations of models, all with signature (`(x, alt, t) -> x_dot`), will suffice. (Incidentally, note that a function that linearly combines of models is itself a model.)
+For the majority of cases, taking `f` (the function the integrator will use) as linear combinations of models, all with signature `(x, alt, t) -> x_dot`, will suffice. (Incidentally, note that a function that linearly combines models is itself a model.)
 
 At the start, some configuration is loaded, and a function is (dynamically) created; simply put:
 
@@ -53,15 +53,15 @@ def f(x, alt, t):
 where
 
   - `x = [latitude, longitude]` (`list` of `float`s; maybe rank-1 numpy array)
-  - `alt` is the altitude in metres
-    TODO: perfect sphere, or different model?
+  - `alt` is the altitude in metres   
+    <small>TODO: perfect sphere, or different model?</small>
   - `t` is an object with attributes 
-      - `now` - absolute time, (Python's `datetime.datetime`)
-        Aside: this might be quite expensive to create and rarely used, so it could be worth creating this only when it's needed.
+      - `now` - absolute time, (Python's `datetime.datetime`)   
+        <small>Aside: this might be quite expensive to create and rarely used, so it could be worth creating this only when it's needed.</small>
       - `flight_time` - time since the prediction started, in seconds (`float`)
   - `x_dot = [lat_dot, lon_dot]` (the returned value; `list` of `float`s)
     `lat_dot` and `lon_dot` are velocities northwards and eastwards wrt. the current position, as dlat/dt / dlon/dt respectively (i.e., **not** m/s)
-    (There must be a better way to describe that.)
+    <small>(There must be a better way to describe that.)</small>
 
 As an aside on coordinates (see [notes from 20131117 meeting](meeting-20131117-notes.html)), we convert to latitude & longitude ASAP since they will (probably) be simpler to work with; and the conversion "ASAP" is so that we - as much as possible - are only working in one coordinate system throughout the code.
 
@@ -93,20 +93,18 @@ class Model(object):
 
 The function (just as in the simple case, really) must promise to be pure and not keep state using attributes.
 
-# Altitude Models
+# Altitude Models (`g`)
 
-Pure functions `f(time) -> altitude`
+Pure functions `f(time) -> altitude`, picked from a collection including:
 
-We want to pick `g`, the "**altitude model**" from a collection including
+  - "up & down" (e.g., the simplest version is constant velocity up, `x^-n` down),
+  - floating balloon.
 
-  - "up & down" (e.g., the simplest version is constant velocity up, `x^-n` down)
-  - floating balloon
-
-# Termination functions
+# Termination functions (`h`)
 
 We want altitude models to be (pure) functions `f(time) -> altitude`, but then the altitude model is unable to decide whether the balloon has landed in general, since (for example) you need current position to check the ground altitude.
 
 A *termination function* `f(position) -> bool` decides if the prediction should end. For example:
 
-  - has it clipped through the ground (landed)
-  - has it been floating for too long
+  - has it clipped through the ground (landed)?
+  - has it been floating for too long?

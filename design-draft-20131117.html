@@ -40,11 +40,11 @@
     <p>We want to be able to swap "bits" of <code>f</code> out; that is, take our pick from some "<strong>models</strong>":</p>
 
     <ul>
-    <li>wind velocity</li>
+    <li>wind velocity,</li>
     <li>something more exotic like parachute glide.</li>
     </ul>
 
-    <p>For the majority of cases, taking <code>f</code> (the function the integrator will use) as linear combinations of models, all with signature (<code>(x, alt, t) -&gt; x_dot</code>), will suffice. (Incidentally, note that a function that linearly combines of models is itself a model.)</p>
+    <p>For the majority of cases, taking <code>f</code> (the function the integrator will use) as linear combinations of models, all with signature <code>(x, alt, t) -&gt; x_dot</code>, will suffice. (Incidentally, note that a function that linearly combines models is itself a model.)</p>
 
     <p>At the start, some configuration is loaded, and a function is (dynamically) created; simply put:</p>
 
@@ -62,8 +62,8 @@
 
     <ul>
     <li><code>x = [latitude, longitude]</code> (<code>list</code> of <code>float</code>s; maybe rank-1 numpy array)</li>
-    <li><code>alt</code> is the altitude in metres
-    TODO: perfect sphere, or different model?</li>
+    <li><code>alt</code> is the altitude in metres <br>
+    <small>TODO: perfect sphere, or different model?</small></li>
     <li><code>t</code> is an object with attributes 
     <ul>
     <li><code>now</code> - absolute time, (Python's <code>datetime.datetime</code>) <br>
@@ -72,7 +72,7 @@
     </ul></li>
     <li><code>x_dot = [lat_dot, lon_dot]</code> (the returned value; <code>list</code> of <code>float</code>s)
     <code>lat_dot</code> and <code>lon_dot</code> are velocities northwards and eastwards wrt. the current position, as dlat/dt / dlon/dt respectively (i.e., <strong>not</strong> m/s)
-    (There must be a better way to describe that.)</li>
+    <small>(There must be a better way to describe that.)</small></li>
     </ul>
 
     <p>As an aside on coordinates (see <a href="meeting-20131117-notes.html">notes from 20131117 meeting</a>), we convert to latitude &amp; longitude ASAP since they will (probably) be simpler to work with; and the conversion "ASAP" is so that we - as much as possible - are only working in one coordinate system throughout the code.</p>
@@ -100,26 +100,24 @@
 
     <p>The function (just as in the simple case, really) must promise to be pure and not keep state using attributes.</p>
 
-    <h1>Altitude Models</h1>
+    <h1>Altitude Models (<code>g</code>)</h1>
 
-    <p>Pure functions <code>f(time) -&gt; altitude</code></p>
-
-    <p>We want to pick <code>g</code>, the "<strong>altitude model</strong>" from a collection including</p>
+    <p>Pure functions <code>f(time) -&gt; altitude</code>, picked from a collection including:</p>
 
     <ul>
-    <li>"up &amp; down" (e.g., the simplest version is constant velocity up, <code>x^-n</code> down)</li>
-    <li>floating balloon</li>
+    <li>"up &amp; down" (e.g., the simplest version is constant velocity up, <code>x^-n</code> down),</li>
+    <li>floating balloon.</li>
     </ul>
 
-    <h1>Termination functions</h1>
+    <h1>Termination functions (<code>h</code>)</h1>
 
     <p>We want altitude models to be (pure) functions <code>f(time) -&gt; altitude</code>, but then the altitude model is unable to decide whether the balloon has landed in general, since (for example) you need current position to check the ground altitude.</p>
 
     <p>A <em>termination function</em> <code>f(position) -&gt; bool</code> decides if the prediction should end. For example:</p>
 
     <ul>
-    <li>has it clipped through the ground (landed)</li>
-    <li>has it been floating for too long</li>
+    <li>has it clipped through the ground (landed)?</li>
+    <li>has it been floating for too long?</li>
     </ul>
 </body>
 </html>
