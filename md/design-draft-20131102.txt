@@ -40,12 +40,10 @@ where
   - `x = [latitude, longitude, altitude]` (list; maybe rank-1 numpy array; maybe object with helper methods to convert to/from map projections)
   - `t` is an object with attributes
       - `now` - absolute time, a Python `datetime.datetime`
-
         this might be quite expensive to create and rarely used, so could be created only when needed?
       - `flight_time` - time since the prediction started, in seconds (float)
       - `dt_past` - time since the last step
   - `x_dot = [u_dot, v_dot, altitude_dot]` (the returned value; list etc.)
-
     `u_dot` and `v_dot` are velocities northwards and eastwards wrt. the current position; the integrator is therefore responsible for converting this into changes to geographic coordinates.
 
 ### Termination of flights
