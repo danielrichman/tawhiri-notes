@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CUSF Predictor API (as it stands after the meeting of 2013-11-17</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="css/misc.css" rel="stylesheet" media="screen">
+    <link href="css/pygments.css" rel="stylesheet" media="screen">
+</head>
+<body>
+    <h1>CUSF Predictor API (as it stands after the meeting of 2013-11-17</h1>
+
+    <h2>Request</h2>
+
+    <p>POST requests are made to the predictor API containing the following:</p>
+
+    <ul>
+    <li><code>launch_latitude [number: decimal degrees]</code></li>
+    <li><code>launch_longitude [number: decimal degrees]</code></li>
+    <li><code>launch_altitude [number: metres]</code> (optional - if left blank, the ground
+    altitude at the given position is looked up)</li>
+    <li><code>launch_datetime [string: RFC3339 formatted]</code></li>
+    <li><code>ascent_rate [number: metres per second]</code></li>
+    <li><code>burst_altitude [number: metres]</code></li>
+    <li><code>descent_rate [number: metres per second]</code></li>
+    <li><code>dataset [string]</code> (optional - if left blank, latest dataset is used)</li>
+    <li><code>model [string]</code> (optional - if left blank, default, <code>simple</code> model is used)</li>
+    </ul>
+
+    <p>Other fields may be required if we write more complex models which take
+    additional parameters.</p>
+
+    <h2>Response</h2>
+
+    <p>The predictor API will return a JSON object of the format below. The
+    prediction itself is stored in an array containing an object for each position.</p>
+
+    <ul>
+    <li><code>parameters [object]</code> 
+    <ul>
+    <li><code>dataset [string]</code> : which dataset is being used</li>
+    <li><code>model [string]</code> : which model is being used</li>
+    <li><code>launch [object]</code>
+    <ul>
+    <li><code>latitude [number: decimal degrees]</code></li>
+    <li><code>longitude [number: decimal degrees]</code></li>
+    <li><code>altitude [number: metres]</code></li>
+    <li><code>datetime [string: RFC3339 formatted]</code></li>
+    <li><code>rate [number: metres per second]</code></li>
+    </ul></li>
+    <li><code>burst [object]</code>
+    <ul>
+    <li><code>latitude [number: decimal degrees]</code></li>
+    <li><code>longitude [number: decimal degrees]</code></li>
+    <li><code>altitude [number: metres]</code></li>
+    <li><code>datetime [string: RFC3339 formatted]</code></li>
+    </ul></li>
+    <li><code>landing [object]</code>
+    <ul>
+    <li><code>latitude [number: decimal degrees]</code></li>
+    <li><code>longitude [number: decimal degrees]</code></li>
+    <li><code>altitude [number: metres]</code></li>
+    <li><code>datetime [string: RFC3339 formatted]</code></li>
+    <li><code>rate [number: metres per second]</code></li>
+    </ul></li>
+    </ul></li>
+    <li><code>trajectory [array]</code> : prediction output in the form of an array of objects
+    (details below)</li>
+    <li><code>metadata [object]</code>
+    <ul>
+    <li><code>start_time [string: RFC3339 formatted]</code> : when the prediction started</li>
+    <li><code>started [boolean]</code> : whether the prediction has started</li>
+    <li><code>complete_time [string: RFC3339 formatted]</code> : when the prediction completed</li>
+    <li><code>complete [boolean]</code> : whether the prediction is complete</li>
+    <li><code>warnings [array: array of strings]</code> : any warnings outputted by the
+    predictor</li>
+    </ul></li>
+    </ul>
+
+    <p>The predicted trajectory is outputted as follows:</p>
+
+    <p><pre>"trajectory": [
+    {
+        "latitude": 0,
+        "longitude": 0,
+        "altitude": 0,
+        "datetime": "2013-11-03T12:34:56Z"
+    },
+    ...
+]</pre></p>
+
+    <h2>Error Response</h2>
+
+    <p>Errors mean that the current prediction run could not be completed
+    whilst warnings allow the prediction run to continue and are outputted
+    alongside the rest of the response.</p>
+
+    <p>If there is an error in either the requested prediction parameters or the
+    prediction run, a different response will be returned with either a <code>400 Bad
+    Request</code> if it is a user error or <code>500 Internal Server Error</code> if it is an error
+    in the predictor. Additional codes could be used such as <code>410 Gone</code> if the
+    dataset has been deleted from the server.</p>
+
+    <p>The following is an example of the output in the case of one or more errors.</p>
+
+    <p><pre>{
+    "errors": [
+        {
+            "class": "ClassName",
+            "description": "Some description of the error"
+        },
+        ...
+    ]
+}</pre></p>
+
+    <h2>URL(s)</h2>
+
+    <p>The API has a single endpoint:</p>
+
+    <ul>
+    <li><code>/</code> - make a POST request start a new prediction</li>
+    </ul>
+
+    <h2>Polling</h2>
+
+    <p>The API will use long polling whereby the connection is kept open until the
+    prediction is complete (<code>200 OK</code> HTTP status code).</p>
+
+    <h2>Storing Past Predictions &amp; Caching</h2>
+
+    <p>Past prediction runs are not stored and they are instead re-run when necessary.
+    This method will mean that prediction runs which utilised datasets which are no
+    longer available on the server cannot be retrieved. To get around this a cache
+    could be placed in front of the API. (It should be made sure that predictions
+    which explicitly use the <em>latest</em> dataset are only cached until the next
+    dataset is available from the NOAA.)</p>
+
+</body>
+</html>

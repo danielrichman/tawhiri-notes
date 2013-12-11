@@ -1,0 +1,102 @@
+# Predictor meeting 2013-11-17 notes
+
+## Problems from the design decisions last time
+
+See also: [Design Doubts](ramblings-20131102.html).
+
+### Models
+
+We reviewed the list of possible things that we might want to model...
+
+  - altitude models: up & down, up & float
+  - misc: 'chute glide
+
+... and concluded that there's no point in having and integrating velocity in the vertical direction. All altitude models are `f(time) -> altitude`
+
+So, we'll specify the altitude model, and some functions `f(position) -> horizontal velocity` separately; the latter will be subjected to some ODE solver.
+
+### Coordinates
+
+Where and what should we use?
+
+Notes:
+
+  - the wind velocities are cartesian; i.e., u and v velocities (pointing North and East) in m/s
+  - altitude models will be in metres / m/s etc.
+  - the current predictor works exclusively in latitude & longitude, converting the m/s into delta lat and delta lon in each step
+  - good libraries exist for all the conversions
+
+Options:
+
+ - [ECEF](http://en.wikipedia.org/wiki/ECEF) (hardcore Cartesian with the Earth at the origin)
+ - Latitude, longitude, altitude (spherical polars)
+      - then either
+          - **all functions return delta lat & delta lon - i.e., convert to lat&lon ASAP**
+          - all functions return m/s; they're summed up and conversion is the last step in the ODE solver
+ - [UTM](http://en.wikipedia.org/wiki/Universal_Transverse_Mercator_coordinate_system)
+      - Works pretty well outside just of the zone, so can feasibly pick the zone for the launch point and just use that
+
+The bolded option was picked because latitude & longitude will probably be simpler to work with, and we want to convert ASAP so that we are - as much as possible - only working in one coordinate system throughout the code.
+
+### Stopping the prediction
+
+We want to altitude models to be functions `f(time) -> altitude`, but then the altitude model can't decide whether the balloon has landed in general, since (for example) you need current position to check the ground altitude, to decide if the balloon has landed.
+
+Plan: we will have *termination functions* `f(position) -> bool` (one is selected for a prediction much in the same way an altitude model is selected).
+
+Example possible termination functions:
+
+  - has it clipped through the ground (landed)
+  - has it been floating for too long
+
+# Model state
+
+Although we do not yet, in the future we may want models to have some sort of state. However, we want our models to be pure functions, since this is necessary for more interesting integration methods (and is cleaner).
+
+Core idea: we give models a dict that they can store state on.
+
+In order to make these functions pure, instead they return the keys to modify, and the calling function updates the state dictionary. This is also faster (avoids dict.copy() all the time). We can enforce the purity (i.e., the model may not modify the dict) by passing an "immutable dict" (such classes exist).
+
+## UI
+
+The motion that bootstrap is cool was proposed and passed unanimously.
+
+### Discussion on how best to show hourly predictions
+
+Colours? Perhaps:
+
+ - hue depends on day
+ - brightness depends on time of day (i.e., bright for daytime and dark for night-time), since typically we don't care about anything but ~1pm each day
+
+### Aside (sort of off topic; though discussed in meeting)
+
+While waiting for the rest of the project, if those working on the UI fancy making the hourly interface, we can hack it on to the [existing hourly predictor](http://predict.habhub.org/hourly/cambridge), and everyone will love you (there are currently 53 different hourly predictors set up).
+
+
+## API
+
+### No uuids
+
+We're not going to use UUIDs any more. This also means there is only a single endpoint for the API.
+
+UUIDs serve two purposes:
+
+  - avoid re-running predictions
+      - First, note that after replacing 'use the latest dataset' with the date of the latest dataset, the process that takes a request to a prediction (or an error) is [pure](http://en.wikipedia.org/wiki/Pure_function) (by a loose definition; you hopefully know what I mean)...
+
+        ... so we can in fact treat this as a caching problem, and add a caching layer in there without too much issue if we want.
+
+  - provide a way to link a prediction to your friend
+      - We intend to have prediction parameters encoded into the URLs (something for the UI guys; e.g., /predict#encoded_parameters) and then can provide a short-link server to make them nicer to send around.
+
+
+### Misc
+
+  - Errors stop the prediction run and result in a different response with appropriate HTTP status code.
+  - Decided to use long polling and hence progress ("percentage_complete") of prediction will not be returned to the user.
+  - Default model to be called `simple`.
+  - The hourly will probably send send N requests to the API, rather than batching them up, for simplicity.
+
+### [Docs](meeting-20131117-api.html)
+
+Priyesh `pp384` has updated the [description of the predictor API](meeting-20131117-api.html) to reflect today's meeting.
