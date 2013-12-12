@@ -100,7 +100,7 @@ Pure functions `f(time) -> altitude`, picked from a collection including:
   - constant velocity up
   - `x^-n` down
   - floating balloon
-  - floating balloon, taking into account the effects of sunlight
+  - "diurnal" floating model (taking into account the effects of sunlight)
 
 # Termination functions (`h`)
 
@@ -135,6 +135,8 @@ Then armed with altitude models
       - probably the same horizontal model choices
       - terminal velocity descent
       - clipped through ground / landed
+
+(or item 2's altitude model could be 'floating balloon').
 
 This is essentially just asking the predictor to run two predictions, one immediately after the other, with the second using the starting time and position that the first finished at.
 
