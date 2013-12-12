@@ -1,0 +1,13 @@
+# Some stuff about the design as it was after the last meeting
+
+## Altitude models
+
+[We said](meeting-20131117-notes.html) "... that there's no point in having and integrating velocity in the vertical direction, since all altitude models are `f(time) -> altitude`").
+
+Here's a counterexample!
+
+Floating balloons' altitude is affected by sunlight - the heat warms up the gas, etc. This means that the altitude of the balloon depends not only on the position of the balloon (has the sun risen where the balloon is now?) but also the position history (has it been in the sun for the past hour, or did it just cross into it?).
+
+However it is indeed still true that integrating / computing a velocity and then solving the ODE for the constant ascent, floating at constant altitude, and the current descent models would be a waste of time.
+
+Basically I propose being able to pick between the two styles. This would require a different ODE-solving loop for each case, but that's not the end of the world (or perhaps a couple of if blocks in the loop).
