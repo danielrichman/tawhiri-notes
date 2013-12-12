@@ -53,6 +53,7 @@
     <li><code>now</code> - absolute time, (Python's <code>datetime.datetime</code>) <br>
     <small>Aside: this might be quite expensive to create and rarely used, so it could be worth creating this only when it's needed.</small></li>
     <li><code>flight_time</code> - time since the prediction started, in seconds (<code>float</code>)</li>
+    <li><code>item_time</code> - time since this item in the prediction started (see Chaining), seconds, (<code>float</code>)</li>
     </ul></li>
     <li><code>x_dot = [lat_dot, lon_dot]</code> (the returned value; <code>list</code> of <code>float</code>s)
     <code>lat_dot</code> and <code>lon_dot</code> are velocities northwards and eastwards wrt. the current position, as dlat/dt / dlon/dt respectively (i.e., <strong>not</strong> m/s)

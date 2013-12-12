@@ -44,6 +44,7 @@ where
       - `now` - absolute time, (Python's `datetime.datetime`)   
         <small>Aside: this might be quite expensive to create and rarely used, so it could be worth creating this only when it's needed.</small>
       - `flight_time` - time since the prediction started, in seconds (`float`)
+      - `item_time` - time since this item in the prediction started (see Chaining), seconds, (`float`)
   - `x_dot = [lat_dot, lon_dot]` (the returned value; `list` of `float`s)
     `lat_dot` and `lon_dot` are velocities northwards and eastwards wrt. the current position, as dlat/dt / dlon/dt respectively (i.e., **not** m/s)
     <small>(There must be a better way to describe that.)</small>
