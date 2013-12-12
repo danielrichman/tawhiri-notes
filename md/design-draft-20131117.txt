@@ -16,32 +16,17 @@ while not h(x, alt, t):
 
 where
 
-  - `f` is a **model** (or a combination of, see below),
+  - `f` is a **horizontal model** (or a combination of, see below),
   - `g` is a **altitude model**,
   - `h` is a **termination function**.
 
 ## Purity
 
-Models, altitude models and termination functions must all be [pure](http://en.wikipedia.org/wiki/Pure_function).
+Horizontal models, altitude models and termination functions must all be [pure](http://en.wikipedia.org/wiki/Pure_function).
 
 This is cleaner, and allows us to use more interesting integration methods if we want later.
 
-## Linear combination of models
-
-We want to be able to swap "bits" of `f` out; that is, take our pick from some "**models**":
-
-  - wind velocity,
-  - something more exotic like parachute glide.
-
-For the majority of cases, taking `f` (the function the integrator will use) as linear combinations of models, all with signature `(x, alt, t) -> x_dot`, will suffice. (Incidentally, note that a function that linearly combines models is itself a model.)
-
-At the start, some configuration is loaded, and a function is (dynamically) created; simply put:
-
-```python
-def make_f(models): return lambda x, t: sum(model(x, t) for model in models)
-```
-
-# Models (`f`)
+# Horizontal models (`f`)
 
 ## Signature
 
@@ -64,6 +49,21 @@ where
     <small>(There must be a better way to describe that.)</small>
 
 As an aside on coordinates (see [notes from 20131117 meeting](meeting-20131117-notes.html)), we convert to latitude & longitude ASAP since they will (probably) be simpler to work with; and the conversion "ASAP" is so that we - as much as possible - are only working in one coordinate system throughout the code.
+
+## Linear combination of models
+
+We want to be able to swap "bits" of `f` out; that is, take our pick from some "**models**":
+
+  - wind velocity,
+  - something more exotic like parachute glide.
+
+For the majority of cases, taking `f` (the function the integrator will use) as linear combinations of models, all with signature `(x, alt, t) -> x_dot`, will suffice. (Incidentally, note that a function that linearly combines models is itself a model.)
+
+At the start, some configuration is loaded, and a function is (dynamically) created; simply put:
+
+```python
+def make_f(models): return lambda x, t: sum(model(x, t) for model in models)
+```
 
 ## State
 
@@ -97,8 +97,10 @@ The function (just as in the simple case, really) must promise to be pure and no
 
 Pure functions `f(time) -> altitude`, picked from a collection including:
 
-  - "up & down" (e.g., the simplest version is constant velocity up, `x^-n` down),
-  - floating balloon.
+  - constant velocity up
+  - `x^-n` down
+  - floating balloon
+  - floating balloon, taking into account the effects of sunlight
 
 # Termination functions (`h`)
 
@@ -108,3 +110,35 @@ A *termination function* `f(position) -> bool` decides if the prediction should 
 
   - has it clipped through the ground (landed)?
   - has it been floating for too long?
+
+# Chaining
+
+We may want to "chain" configurations / selections of models:
+
+Then armed with altitude models
+
+  - constant rate ascent
+  - terminal velocity descent
+
+... and termination conditions ...
+
+  - burst altitude reached
+  - clipped through ground / landed
+
+... you could have the prediction
+
+  - item 1
+      - some horizontal model choices
+      - constant rate ascent
+      - burst altitude reached
+  - item 2
+      - probably the same horizontal model choices
+      - terminal velocity descent
+      - clipped through ground / landed
+
+This is essentially just asking the predictor to run two predictions, one immediately after the other, with the second using the starting time and position that the first finished at.
+
+This accommodates more complex logic without modifying our altitude models. For example,
+
+  - we could predict a balloon with some sort of geo-fencing-cutdown by providing the cutdown logic as the termination function to the first half of the prediction
+  - we can simulate something that can drop ballast as a chain of predictions

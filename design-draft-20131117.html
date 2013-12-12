@@ -24,36 +24,20 @@
     <p>where</p>
 
     <ul>
-    <li><code>f</code> is a <strong>model</strong> (or a combination of, see below),</li>
+    <li><code>f</code> is a <strong>horizontal model</strong> (or a combination of, see below),</li>
     <li><code>g</code> is a <strong>altitude model</strong>,</li>
     <li><code>h</code> is a <strong>termination function</strong>.</li>
     </ul>
 
     <h2>Purity</h2>
 
-    <p>Models, altitude models and termination functions must all be <a href="http://en.wikipedia.org/wiki/Pure_function">pure</a>.</p>
+    <p>Horizontal models, altitude models and termination functions must all be <a href="http://en.wikipedia.org/wiki/Pure_function">pure</a>.</p>
 
     <p>This is cleaner, and allows us to use more interesting integration methods if we want later.</p>
 
-    <h2>Linear combination of models</h2>
-
-    <p>We want to be able to swap "bits" of <code>f</code> out; that is, take our pick from some "<strong>models</strong>":</p>
-
-    <ul>
-    <li>wind velocity,</li>
-    <li>something more exotic like parachute glide.</li>
-    </ul>
-
-    <p>For the majority of cases, taking <code>f</code> (the function the integrator will use) as linear combinations of models, all with signature <code>(x, alt, t) -&gt; x_dot</code>, will suffice. (Incidentally, note that a function that linearly combines models is itself a model.)</p>
-
-    <p>At the start, some configuration is loaded, and a function is (dynamically) created; simply put:</p>
-
-    <div class="highlight"><pre><span class="k">def</span> <span class="nf">make_f</span><span class="p">(</span><span class="n">models</span><span class="p">):</span> <span class="k">return</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">sum</span><span class="p">(</span><span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">models</span><span class="p">)</span></pre></div>
-
-    <h1>Models (<code>f</code>)</h1>
+    <h1>Horizontal models (<code>f</code>)</h1>
 
     <h2>Signature</h2>
-
 
     <div class="highlight"><pre><span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">alt</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">x_dot</span></pre><div>
@@ -76,6 +60,21 @@
     </ul>
 
     <p>As an aside on coordinates (see <a href="meeting-20131117-notes.html">notes from 20131117 meeting</a>), we convert to latitude &amp; longitude ASAP since they will (probably) be simpler to work with; and the conversion "ASAP" is so that we - as much as possible - are only working in one coordinate system throughout the code.</p>
+
+    <h2>Linear combination of models</h2>
+
+    <p>We want to be able to swap "bits" of <code>f</code> out; that is, take our pick from some "<strong>models</strong>":</p>
+
+    <ul>
+    <li>wind velocity,</li>
+    <li>something more exotic like parachute glide.</li>
+    </ul>
+
+    <p>For the majority of cases, taking <code>f</code> (the function the integrator will use) as linear combinations of models, all with signature <code>(x, alt, t) -&gt; x_dot</code>, will suffice. (Incidentally, note that a function that linearly combines models is itself a model.)</p>
+
+    <p>At the start, some configuration is loaded, and a function is (dynamically) created; simply put:</p>
+
+    <div class="highlight"><pre><span class="k">def</span> <span class="nf">make_f</span><span class="p">(</span><span class="n">models</span><span class="p">):</span> <span class="k">return</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">sum</span><span class="p">(</span><span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">models</span><span class="p">)</span></pre></div>
 
     <h2>State</h2>
 
@@ -105,8 +104,10 @@
     <p>Pure functions <code>f(time) -&gt; altitude</code>, picked from a collection including:</p>
 
     <ul>
-    <li>"up &amp; down" (e.g., the simplest version is constant velocity up, <code>x^-n</code> down),</li>
-    <li>floating balloon.</li>
+    <li>constant velocity up</li>
+    <li><code>x^-n</code> down</li>
+    <li>floating balloon</li>
+    <li>floating balloon, taking into account the effects of sunlight</li>
     </ul>
 
     <h1>Termination functions (<code>h</code>)</h1>
@@ -119,5 +120,50 @@
     <li>has it clipped through the ground (landed)?</li>
     <li>has it been floating for too long?</li>
     </ul>
+
+    <h1>Chaining</h1>
+
+    <p>We may want to "chain" configurations / selections of models:</p>
+
+    <p>Then armed with altitude models</p>
+
+    <ul>
+    <li>constant rate ascent</li>
+    <li>terminal velocity descent</li>
+    </ul>
+
+    <p>... and termination conditions ...</p>
+
+    <ul>
+    <li>burst altitude reached</li>
+    <li>clipped through ground / landed</li>
+    </ul>
+
+    <p>... you could have the prediction</p>
+
+    <ul>
+    <li>item 1
+    <ul>
+    <li>some horizontal model choices</li>
+    <li>constant rate ascent</li>
+    <li>burst altitude reached</li>
+    </ul></li>
+    <li>item 2
+    <ul>
+    <li>probably the same horizontal model choices</li>
+    <li>terminal velocity descent</li>
+    <li>clipped through ground / landed</li>
+    </ul></li>
+    </ul>
+
+    <p>This is essentially just asking the predictor to run two predictions, one immediately after the other, with the second using the starting time and position that the first finished at.</p>
+
+    <p>This accommodates more complex logic without modifying our altitude models. For example,</p>
+
+    <ul>
+    <li>we could predict a balloon with some sort of geo-fencing-cutdown by providing the cutdown logic as the termination function to the first half of the prediction</li>
+    <li>we can simulate something that can drop ballast as a chain of predictions</li>
+    </ul>
+
 </body>
 </html>
