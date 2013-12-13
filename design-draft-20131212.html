@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Design Draft (2013-12-12)</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="css/misc.css" rel="stylesheet" media="screen">
+    <link href="css/pygments.css" rel="stylesheet" media="screen">
+</head>
+<body>
+
+<h1>Core Overview</h1>
+
+<p>The basic idea is to do something along the lines of</p>
+
+<div class="highlight"><pre><span class="k">while</span> <span class="ow">not</span> <span class="n">k</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+    <span class="n">x_dot</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">+=</span> <span class="n">x_dot</span> <span class="o">*</span> <span class="n">dt</span>
+</pre></div>
+
+<p>where</p>
+
+<ul>
+<li><code>f</code> is a <strong>model</strong> (or a combination of, see below),</li>
+<li><code>k</code> is a <strong>termination function</strong>.</li>
+</ul>
+
+<p>Some altitude models are far simpler to implement as functions <code>f(time) -&gt; altitude</code>, and others need included as part of the ODE and solved (see <a href="ramblings-20131212.html">notes 2013-12-12</a>), so optionally a second style of solving can be used:</p>
+
+<div class="highlight"><pre><span class="k">while</span> <span class="ow">not</span> <span class="n">k</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+    <span class="c"># ODE-solve horizontally</span>
+    <span class="n">x_dot</span> <span class="o">=</span> <span class="n">g</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">x_dot</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span>
+    <span class="n">x</span> <span class="o">+=</span> <span class="n">x_dot</span> <span class="o">*</span> <span class="n">dt</span>
+
+    <span class="c"># Update the altitude</span>
+    <span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">h</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+</pre></div>
+
+<p>where</p>
+
+<ul>
+<li><code>g</code> is a <strong>model</strong> (or combination of) which always returns a vertical velocity of zero (a <strong>horizontal model</strong>),</li>
+<li><code>h</code> is an <strong>altitude profile</strong>,</li>
+<li><code>k</code> is (still) a <strong>termination function</strong>.</li>
+</ul>
+
+<h2>Purity</h2>
+
+<p>Models, altitude profiles and termination functions must all be <a href="http://en.wikipedia.org/wiki/Pure_function">pure</a>.</p>
+
+<p>This is cleaner, and allows us to use more interesting integration methods if we want later.</p>
+
+<h1>Models (<code>f</code>)</h1>
+
+<h2>Signature</h2>
+
+<div class="highlight"><pre><span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x_dot</span>
+</pre></div>
+
+<p>where</p>
+
+<ul>
+<li><code>x = [latitude, longitude, altitude]</code> (decimal degrees, decimal degrees, metres; all floats)</li>
+<li><code>time</code> is an object with attributes
+<ul>
+<li><code>now</code> - absolute time, (Python's datetime)</li>
+<li><code>flight_time</code> - time since the prediction started, in seconds (float)</li>
+<li><code>item_time</code> - time since this item in the prediction started (see Chaining), seconds, (float)</li>
+</ul></li>
+<li><code>x_dot = [lat_dot, lon_dot, alt_dot]</code> (the returned value; all floats)
+<code>lat_dot</code> and <code>lon_dot</code> are velocities northwards and eastwards wrt. the current position, as "change in degrees per unit time" (i.e., <strong>not</strong> m/s); <code>alt_dot</code> is metres per second.</li>
+</ul>
+
+<p>As an aside on coordinates (see <a href="meeting-20131117-notes.html">notes from 20131117 meeting</a>), we convert to latitude &amp; longitude ASAP since they will (probably) be simpler to work with; and the conversion "ASAP" is so that we - as much as possible - are only working in one coordinate system throughout the code.</p>
+
+<h2>Linear combination of models</h2>
+
+<p>We want to be able to swap "bits" of <code>f</code> out; that is, take our pick from some "<strong>models</strong>":</p>
+
+<ul>
+<li>wind velocity,</li>
+<li>something more exotic like parachute glide.</li>
+</ul>
+
+<p>For the majority of cases, taking <code>f</code> (the function the integrator will use) as linear combinations of models, all with signature <code>(x, t) -&gt; x_dot</code>, will suffice. (Incidentally, note that a function that linearly combines models is itself a model.)</p>
+
+<p>At the start, some configuration is loaded, and a function is (dynamically) created; simply put:</p>
+
+<div class="highlight"><pre><span class="k">def</span> <span class="nf">make_f</span><span class="p">(</span><span class="n">models</span><span class="p">):</span> <span class="k">return</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">sum_pointwise</span><span class="p">(</span><span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">models</span><span class="p">)</span>
+</pre></div>
+
+<h2>State</h2>
+
+<p>The <a href="meeting-20131117-notes.html">notes from the meeting on 2013117</a> contains some remarks on how we would implement state for models, if we needed to (while keeping purity).</p>
+
+<h2>Simple models</h2>
+
+<p>The most basic model would be a function</p>
+
+<div class="highlight"><pre><span class="k">def</span> <span class="nf">my_model</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span> <span class="k">return</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+</pre></div>
+
+<h2>Complex models</h2>
+
+<p>Thanks to callable objects, we can keep the simple concept of a model being a function, but add configuration:</p>
+
+<div class="highlight"><pre><span class="k">class</span> <span class="nc">Model</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">some_setting</span><span class="o">=</span><span class="mi">6</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">some_setting</span> <span class="o">=</span> <span class="n">some_setting</span>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">some_setting</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+</pre></div>
+
+<p>The function (just as in the simple case, really) must promise to be pure and not keep state using attributes.</p>
+
+<h1>Altitude profiles</h1>
+
+<p>Pure functions <code>f(time) -&gt; altitude</code>, picked from a collection including:</p>
+
+<ul>
+<li>constant velocity up</li>
+<li><code>x^-n</code> down</li>
+<li>floating balloon</li>
+</ul>
+
+<h1>Termination functions</h1>
+
+<p>A <em>termination function</em> <code>f(position) -&gt; bool</code> decides if the prediction should end. For example:</p>
+
+<ul>
+<li>has it clipped through the ground (landed)?</li>
+<li>has it been floating for too long?</li>
+</ul>
+
+<h1>Chaining</h1>
+
+<p>We may want to "chain" configurations / selections of models:</p>
+
+<p>Then armed with altitude profiles</p>
+
+<ul>
+<li>constant rate ascent</li>
+<li>terminal velocity descent</li>
+</ul>
+
+<p>... and termination conditions ...</p>
+
+<ul>
+<li>burst altitude reached</li>
+<li>clipped through ground / landed</li>
+</ul>
+
+<p>... you could have the prediction</p>
+
+<ul>
+<li>item 1
+<ul>
+<li>some horizontal model choices</li>
+<li>constant rate ascent</li>
+<li>burst altitude reached</li>
+</ul></li>
+<li>item 2
+<ul>
+<li>probably the same horizontal model choices</li>
+<li>terminal velocity descent</li>
+<li>clipped through ground / landed</li>
+</ul></li>
+</ul>
+
+<p>(or item 2's altitude model could be 'floating balloon').</p>
+
+<p>This is essentially just asking the predictor to run two predictions, one immediately after the other, with the second using the starting time and position that the first finished at.</p>
+
+<p>This accommodates more complex logic without modifying our models. For example:</p>
+
+<ul>
+<li>we could predict a balloon with some sort of geo-fencing-cutdown by providing the cutdown logic as the termination function to the first half of the prediction</li>
+<li>we can simulate something that can drop ballast as a chain of predictions</li>
+</ul>
+
+</body>
+</html>

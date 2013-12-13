@@ -1,0 +1,153 @@
+# Core Overview
+
+The basic idea is to do something along the lines of
+
+```python
+while not k(x, t):
+    x_dot = f(x, t)
+    x += x_dot * dt
+```
+
+where
+
+  - `f` is a **model** (or a combination of, see below),
+  - `k` is a **termination function**.
+
+Some altitude models are far simpler to implement as functions `f(time) -> altitude`, and others need included as part of the ODE and solved (see [notes 2013-12-12](ramblings-20131212.html)), so optionally a second style of solving can be used:
+
+```python
+while not k(x, t):
+    # ODE-solve horizontally
+    x_dot = g(x, t)
+    assert x_dot[2] == 0
+    x += x_dot * dt
+
+    # Update the altitude
+    x[2] = h(t)
+```
+
+where
+
+  - `g` is a **model** (or combination of) which always returns a vertical velocity of zero (a **horizontal model**),
+  - `h` is an **altitude profile**,
+  - `k` is (still) a **termination function**.
+
+## Purity
+
+Models, altitude profiles and termination functions must all be [pure](http://en.wikipedia.org/wiki/Pure_function).
+
+This is cleaner, and allows us to use more interesting integration methods if we want later.
+
+# Models (`f`)
+
+## Signature
+
+```python
+def f(x, time):
+    return x_dot
+```
+
+where
+
+  - `x = [latitude, longitude, altitude]` (decimal degrees, decimal degrees, metres; all floats)
+  - `time` is an object with attributes
+      - `now` - absolute time, (Python's datetime)
+      - `flight_time` - time since the prediction started, in seconds (float)
+      - `item_time` - time since this item in the prediction started (see Chaining), seconds, (float)
+  - `x_dot = [lat_dot, lon_dot, alt_dot]` (the returned value; all floats)
+    `lat_dot` and `lon_dot` are velocities northwards and eastwards wrt. the current position, as "change in degrees per unit time" (i.e., **not** m/s); `alt_dot` is metres per second.
+
+As an aside on coordinates (see [notes from 20131117 meeting](meeting-20131117-notes.html)), we convert to latitude & longitude ASAP since they will (probably) be simpler to work with; and the conversion "ASAP" is so that we - as much as possible - are only working in one coordinate system throughout the code.
+
+## Linear combination of models
+
+We want to be able to swap "bits" of `f` out; that is, take our pick from some "**models**":
+
+  - wind velocity,
+  - something more exotic like parachute glide.
+
+For the majority of cases, taking `f` (the function the integrator will use) as linear combinations of models, all with signature `(x, t) -> x_dot`, will suffice. (Incidentally, note that a function that linearly combines models is itself a model.)
+
+At the start, some configuration is loaded, and a function is (dynamically) created; simply put:
+
+```python
+def make_f(models): return lambda x, t: sum_pointwise(model(x, t) for model in models)
+```
+
+## State
+
+The [notes from the meeting on 2013117](meeting-20131117-notes.html) contains some remarks on how we would implement state for models, if we needed to (while keeping purity).
+
+
+## Simple models
+
+The most basic model would be a function
+
+```python
+def my_model(x, t): return [1, 2, 3]
+```
+
+## Complex models
+
+Thanks to callable objects, we can keep the simple concept of a model being a function, but add configuration:
+
+```python
+class Model(object):
+    def __init__(self, some_setting=6):
+        self.some_setting = some_setting
+
+    def __call__(self, x, t):
+        return [4, self.some_setting, 0]
+```
+
+The function (just as in the simple case, really) must promise to be pure and not keep state using attributes.
+
+# Altitude profiles
+
+Pure functions `f(time) -> altitude`, picked from a collection including:
+
+  - constant velocity up
+  - `x^-n` down
+  - floating balloon
+
+# Termination functions
+
+A *termination function* `f(position) -> bool` decides if the prediction should end. For example:
+
+  - has it clipped through the ground (landed)?
+  - has it been floating for too long?
+
+# Chaining
+
+We may want to "chain" configurations / selections of models:
+
+Then armed with altitude profiles
+
+  - constant rate ascent
+  - terminal velocity descent
+
+... and termination conditions ...
+
+  - burst altitude reached
+  - clipped through ground / landed
+
+... you could have the prediction
+
+  - item 1
+      - some horizontal model choices
+      - constant rate ascent
+      - burst altitude reached
+  - item 2
+      - probably the same horizontal model choices
+      - terminal velocity descent
+      - clipped through ground / landed
+
+(or item 2's altitude model could be 'floating balloon').
+
+This is essentially just asking the predictor to run two predictions, one immediately after the other, with the second using the starting time and position that the first finished at.
+
+This accommodates more complex logic without modifying our models. For example:
+
+  - we could predict a balloon with some sort of geo-fencing-cutdown by providing the cutdown logic as the termination function to the first half of the prediction
+  - we can simulate something that can drop ballast as a chain of predictions
+
