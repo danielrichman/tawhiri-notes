@@ -112,7 +112,7 @@ Pure functions `f(time) -> altitude`, picked from a collection including:
 
 # Termination functions
 
-A *termination function* `f(position) -> bool` decides if the prediction should end. For example:
+A *termination function* `f(position, time) -> bool` decides if the prediction should end. For example:
 
   - has it clipped through the ground (landed)?
   - has it been floating for too long?
