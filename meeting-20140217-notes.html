@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Predictor meeting 2013-11-17 notes</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="css/misc.css" rel="stylesheet" media="screen">
+</head>
+
+<body>
+    <h1>Predictor meeting 2014-02-17 notes</h1>
+
+    <h2>Language choice</h2>
+
+    <p>Separate feasibility discussion (specifically wrt. speed) from “liking” languages. People seemed generally indifferent to languages in the latter sense, though David correctly pointed out that not many people know Haskell, which would be a pain.</p>
+
+    <p>Priyesh is holding off on the API (spec finalised) until language chosen.</p>
+
+    <p>Daniel solicited volunteers to try and speed up the implementations in different languages. (Determine if feasible; doesn’t have to be nice or well commented, that can come later. Bear in mind two of the three is going to get binned.)</p>
+
+    <h3>Haskell: David</h3>
+
+    <p>Daniel to add comments to <code>Dataset.hs</code>
+    Notes:
+    May want to look at picking the right pressure level first before binary searching. Either by remembering (impure? unsafe?), or by guessing-- see mean/stddev of height levels on dataset.</p>
+
+    <p>TODO: Find a box somewhere to test on? <code>ceto</code>? <code>magpie</code> is insufficient because it's i686.</p>
+
+    <h3>C++: George</h3>
+
+    <p>May be able to just straight-translate the Python into C++.</p>
+
+    <h3>Python: Adam (volunteered in absence, hope that's cool)</h3>
+
+    <p>Speed improvements? Cython? PYPI? Magic?
+    to try and make the Python one faster.</p>
+
+    <h3>Go (for fun): Daniel</h3>
+
+    <h2>Ground alt datasets</h2>
+
+    <p>Priyesh to look at ground altitude dataset for has-landed detection.
+    Download it and smooth/downsample/decimate it?</p>
+
+    <p>Matt's new UI uses the Google elevation service thing. For consistency, we will probably want to create a second API so that both use the same dataset.</p>
+
+    <h2>UI stuff</h2>
+
+    <p>The new web interface is lovely.</p>
+
+    <p>Setting position can be confusing (you can <em>right</em> click on the map, or left click the button and then <em>left</em> click the map)</p>
+
+    <p>Miscellaneous and wishlist stuff
+      - Store destinations in html5 local storage, inc. defaulting to your most recently used one
+      - Showing a scale on the drag bar
+      - Perhaps colours on the prediction lines (time of day?)
+      - Datetime picker
+      - Maybe make the launch “minute” selection box coarser.
+      - IP Geolocation for initial map location? Does Google provide this kind of service?
+      - Launch location by searching for place name?</p>
+
+    <p>Performance: maybe don’t need as many points in the traces? Decimate?</p>
+
+    <p>Daniel hoping to optimise the existing predictor so that we can deploy Matt's new UI without the PHP &amp; Python overhead being prohibitive (the core is fast enough, the glue is not).</p>
+
+    <h2>Next Meeting</h2>
+
+    <p>Sun 2nd 16:30, at which we will definitely finally absolutely pick a language.</p>
+
+</body>
+</html>

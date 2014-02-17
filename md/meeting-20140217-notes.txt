@@ -1,0 +1,58 @@
+# Predictor meeting 2014-02-17 notes
+
+## Language choice
+
+Separate feasibility discussion (specifically wrt. speed) from “liking” languages. People seemed generally indifferent to languages in the latter sense, though David correctly pointed out that not many people know Haskell, which would be a pain.
+
+Priyesh is holding off on the API (spec finalised) until language chosen.
+
+Daniel solicited volunteers to try and speed up the implementations in different languages. (Determine if feasible; doesn’t have to be nice or well commented, that can come later. Bear in mind two of the three is going to get binned.)
+
+### Haskell: David
+
+Daniel to add comments to `Dataset.hs`
+Notes:
+May want to look at picking the right pressure level first before binary searching. Either by remembering (impure? unsafe?), or by guessing-- see mean/stddev of height levels on dataset.
+
+TODO: Find a box somewhere to test on? `ceto`? `magpie` is insufficient because it's i686.
+
+### C++: George
+
+May be able to just straight-translate the Python into C++.
+
+### Python: Adam (volunteered in absence, hope that's cool)
+
+Speed improvements? Cython? PYPI? Magic?
+to try and make the Python one faster.
+
+### Go (for fun): Daniel
+
+## Ground alt datasets
+
+Priyesh to look at ground altitude dataset for has-landed detection.
+Download it and smooth/downsample/decimate it?
+
+Matt's new UI uses the Google elevation service thing. For consistency, we will probably want to create a second API so that both use the same dataset.
+
+## UI stuff
+
+The new web interface is lovely.
+
+Setting position can be confusing (you can _right_ click on the map, or left click the button and then _left_ click the map)
+
+Miscellaneous and wishlist stuff
+  - Store destinations in html5 local storage, inc. defaulting to your most recently used one
+  - Showing a scale on the drag bar
+  - Perhaps colours on the prediction lines (time of day?)
+  - Datetime picker
+  - Maybe make the launch “minute” selection box coarser.
+  - IP Geolocation for initial map location? Does Google provide this kind of service?
+  - Launch location by searching for place name?
+
+Performance: maybe don’t need as many points in the traces? Decimate?
+
+Daniel hoping to optimise the existing predictor so that we can deploy Matt's new UI without the PHP & Python overhead being prohibitive (the core is fast enough, the glue is not).
+
+## Next Meeting
+
+Sun 2nd 16:30, at which we will definitely finally absolutely pick a language.
