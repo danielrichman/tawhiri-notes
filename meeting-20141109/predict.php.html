@@ -1,0 +1,569 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN"
+   "http://www.w3.org/TR/html4/strict.dtd">
+
+<html>
+<head>
+  <title></title>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <style type="text/css">
+td.linenos { background-color: #f0f0f0; padding-right: 10px; }
+span.lineno { background-color: #f0f0f0; padding: 0 5px 0 5px; }
+pre { line-height: 125%; }
+body .hll { background-color: #ffffcc }
+body  { background: #f8f8f8; }
+body .c { color: #408080; font-style: italic } /* Comment */
+body .err { border: 1px solid #FF0000 } /* Error */
+body .k { color: #008000; font-weight: bold } /* Keyword */
+body .o { color: #666666 } /* Operator */
+body .cm { color: #408080; font-style: italic } /* Comment.Multiline */
+body .cp { color: #BC7A00 } /* Comment.Preproc */
+body .c1 { color: #408080; font-style: italic } /* Comment.Single */
+body .cs { color: #408080; font-style: italic } /* Comment.Special */
+body .gd { color: #A00000 } /* Generic.Deleted */
+body .ge { font-style: italic } /* Generic.Emph */
+body .gr { color: #FF0000 } /* Generic.Error */
+body .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+body .gi { color: #00A000 } /* Generic.Inserted */
+body .go { color: #808080 } /* Generic.Output */
+body .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+body .gs { font-weight: bold } /* Generic.Strong */
+body .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+body .gt { color: #0040D0 } /* Generic.Traceback */
+body .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+body .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+body .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+body .kp { color: #008000 } /* Keyword.Pseudo */
+body .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+body .kt { color: #B00040 } /* Keyword.Type */
+body .m { color: #666666 } /* Literal.Number */
+body .s { color: #BA2121 } /* Literal.String */
+body .na { color: #7D9029 } /* Name.Attribute */
+body .nb { color: #008000 } /* Name.Builtin */
+body .nc { color: #0000FF; font-weight: bold } /* Name.Class */
+body .no { color: #880000 } /* Name.Constant */
+body .nd { color: #AA22FF } /* Name.Decorator */
+body .ni { color: #999999; font-weight: bold } /* Name.Entity */
+body .ne { color: #D2413A; font-weight: bold } /* Name.Exception */
+body .nf { color: #0000FF } /* Name.Function */
+body .nl { color: #A0A000 } /* Name.Label */
+body .nn { color: #0000FF; font-weight: bold } /* Name.Namespace */
+body .nt { color: #008000; font-weight: bold } /* Name.Tag */
+body .nv { color: #19177C } /* Name.Variable */
+body .ow { color: #AA22FF; font-weight: bold } /* Operator.Word */
+body .w { color: #bbbbbb } /* Text.Whitespace */
+body .mf { color: #666666 } /* Literal.Number.Float */
+body .mh { color: #666666 } /* Literal.Number.Hex */
+body .mi { color: #666666 } /* Literal.Number.Integer */
+body .mo { color: #666666 } /* Literal.Number.Oct */
+body .sb { color: #BA2121 } /* Literal.String.Backtick */
+body .sc { color: #BA2121 } /* Literal.String.Char */
+body .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+body .s2 { color: #BA2121 } /* Literal.String.Double */
+body .se { color: #BB6622; font-weight: bold } /* Literal.String.Escape */
+body .sh { color: #BA2121 } /* Literal.String.Heredoc */
+body .si { color: #BB6688; font-weight: bold } /* Literal.String.Interpol */
+body .sx { color: #008000 } /* Literal.String.Other */
+body .sr { color: #BB6688 } /* Literal.String.Regex */
+body .s1 { color: #BA2121 } /* Literal.String.Single */
+body .ss { color: #19177C } /* Literal.String.Symbol */
+body .bp { color: #008000 } /* Name.Builtin.Pseudo */
+body .vc { color: #19177C } /* Name.Variable.Class */
+body .vg { color: #19177C } /* Name.Variable.Global */
+body .vi { color: #19177C } /* Name.Variable.Instance */
+body .il { color: #666666 } /* Literal.Number.Integer.Long */
+
+  </style>
+</head>
+<body>
+<h2></h2>
+
+<div class="highlight"><pre><span class="cp">&lt;?php</span>
+  <span class="k">include_once</span><span class="p">(</span><span class="s1">&#39;config.php&#39;</span><span class="p">);</span>
+  
+  <span class="c1">// Connect to the database</span>
+    <span class="nv">$connection</span> <span class="o">=</span> <span class="nb">pg_connect</span><span class="p">(</span><span class="s2">&quot;dbname=spacenear&quot;</span><span class="p">);</span>
+
+  <span class="c1">/////////////////////////////////////////////////////////////////////////////</span>
+  <span class="k">function</span> <span class="nf">proc_exec</span><span class="p">(</span><span class="nv">$cmd</span><span class="p">,</span> <span class="nv">$cwd</span><span class="p">,</span> <span class="nv">$stdin</span><span class="p">,</span> <span class="o">&amp;</span><span class="nv">$stdout</span><span class="p">,</span> <span class="o">&amp;</span><span class="nv">$stderr</span><span class="p">)</span> <span class="p">{</span> 
+  <span class="c1">/////////////////////////////////////////////////////////////////////////////</span>
+    <span class="nv">$descriptorspec</span> <span class="o">=</span> <span class="k">array</span><span class="p">(</span><span class="mi">0</span> <span class="o">=&gt;</span> <span class="k">array</span><span class="p">(</span><span class="s2">&quot;pipe&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">),</span>  <span class="c1">// stdin</span>
+                            <span class="mi">1</span> <span class="o">=&gt;</span> <span class="k">array</span><span class="p">(</span><span class="s2">&quot;pipe&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">),</span>   <span class="c1">// stdout</span>
+                            <span class="mi">2</span> <span class="o">=&gt;</span> <span class="k">array</span><span class="p">(</span><span class="s2">&quot;pipe&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">));</span>  <span class="c1">// stderr</span>
+    <span class="nv">$pipes</span> <span class="o">=</span> <span class="k">array</span><span class="p">();</span>
+    <span class="nv">$process</span> <span class="o">=</span> <span class="nb">proc_open</span><span class="p">(</span><span class="nv">$cmd</span><span class="p">,</span> <span class="nv">$descriptorspec</span><span class="p">,</span> <span class="nv">$pipes</span><span class="p">,</span> <span class="nv">$cwd</span><span class="p">);</span>
+
+    <span class="nv">$proc_start</span> <span class="o">=</span> <span class="nb">time</span><span class="p">();</span>
+    <span class="nv">$exitcode</span> <span class="o">=</span> <span class="k">null</span><span class="p">;</span>
+    <span class="nv">$ok</span> <span class="o">=</span> <span class="k">true</span><span class="p">;</span>
+
+    <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="nb">is_resource</span><span class="p">(</span><span class="nv">$process</span><span class="p">))</span> <span class="p">{</span>
+      <span class="k">echo</span> <span class="s2">&quot;Failed to open process&quot;</span><span class="p">;</span>
+      <span class="k">return</span> <span class="k">null</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="nx">stream_set_blocking</span><span class="p">(</span><span class="nv">$pipes</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">0</span><span class="p">);</span>
+    <span class="nx">stream_set_blocking</span><span class="p">(</span><span class="nv">$pipes</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="mi">0</span><span class="p">);</span>
+
+    <span class="nb">fwrite</span><span class="p">(</span><span class="nv">$pipes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nv">$stdin</span><span class="p">);</span>
+    <span class="nb">fflush</span><span class="p">(</span><span class="nv">$pipes</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
+    <span class="nb">fclose</span><span class="p">(</span><span class="nv">$pipes</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
+
+    <span class="k">while</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nv">$read</span> <span class="o">=</span> <span class="k">array</span><span class="p">();</span>
+      <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="nb">feof</span><span class="p">(</span><span class="nv">$pipes</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span> <span class="nv">$read</span><span class="p">[]</span> <span class="o">=</span> <span class="nv">$pipes</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+      <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="nb">feof</span><span class="p">(</span><span class="nv">$pipes</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span> <span class="nv">$read</span><span class="p">[]</span> <span class="o">=</span> <span class="nv">$pipes</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+      
+      <span class="k">if</span><span class="p">(</span><span class="k">empty</span><span class="p">(</span><span class="nv">$read</span><span class="p">))</span> <span class="k">break</span><span class="p">;</span>
+
+      <span class="nv">$ready</span> <span class="o">=</span> <span class="nb">stream_select</span><span class="p">(</span><span class="nv">$read</span><span class="p">,</span> <span class="nv">$write</span> <span class="o">=</span> <span class="k">NULL</span><span class="p">,</span> <span class="nv">$ex</span> <span class="o">=</span> <span class="k">NULL</span><span class="p">,</span> <span class="mi">2</span><span class="p">);</span>
+      
+      <span class="k">if</span><span class="p">(</span><span class="nv">$ready</span> <span class="o">===</span> <span class="k">false</span><span class="p">)</span> <span class="k">break</span><span class="p">;</span>
+
+      <span class="k">foreach</span><span class="p">(</span><span class="nv">$read</span> <span class="k">as</span> <span class="nv">$r</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span><span class="p">(</span><span class="nv">$r</span> <span class="o">==</span> <span class="nv">$pipes</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="p">{</span>
+          <span class="nv">$stdout</span> <span class="o">.=</span> <span class="nb">fread</span><span class="p">(</span><span class="nv">$r</span><span class="p">,</span> <span class="mi">1024</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+          <span class="nv">$data</span> <span class="o">=</span> <span class="nb">fread</span><span class="p">(</span><span class="nv">$r</span><span class="p">,</span> <span class="mi">1024</span><span class="p">);</span>
+          <span class="k">if</span> <span class="p">(</span><span class="nb">strlen</span><span class="p">(</span><span class="nv">$stderr</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">)</span>
+            <span class="nv">$stderr</span> <span class="o">.=</span> <span class="nv">$data</span><span class="p">;</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+
+      <span class="nv">$stat</span> <span class="o">=</span> <span class="nb">proc_get_status</span><span class="p">(</span><span class="nv">$process</span><span class="p">);</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nb">time</span><span class="p">()</span> <span class="o">-</span> <span class="nv">$proc_start</span> <span class="o">&gt;</span> <span class="mi">6</span> <span class="o">&amp;&amp;</span> <span class="nv">$stat</span><span class="p">[</span><span class="s2">&quot;running&quot;</span><span class="p">])</span> <span class="p">{</span>
+        <span class="nb">error_log</span><span class="p">(</span><span class="s2">&quot;WARN: Predictor didn&#39;t finish in 5 seconds, terminating&quot;</span><span class="p">);</span>
+        <span class="nb">proc_terminate</span><span class="p">(</span><span class="nv">$process</span><span class="p">);</span>
+        <span class="nv">$ok</span> <span class="o">=</span> <span class="k">false</span><span class="p">;</span>
+        <span class="k">break</span><span class="p">;</span>
+      <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nv">$stat</span><span class="p">[</span><span class="s2">&quot;running&quot;</span><span class="p">]</span> <span class="o">&amp;&amp;</span> <span class="nv">$exitcode</span> <span class="o">===</span> <span class="k">null</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nv">$exitcode</span> <span class="o">=</span> <span class="nv">$stat</span><span class="p">[</span><span class="s2">&quot;exitcode&quot;</span><span class="p">];</span>
+        <span class="k">break</span><span class="p">;</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="nb">fclose</span><span class="p">(</span><span class="nv">$pipes</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+    <span class="nb">fclose</span><span class="p">(</span><span class="nv">$pipes</span><span class="p">[</span><span class="mi">2</span><span class="p">]);</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="nv">$exitcode</span> <span class="o">===</span> <span class="k">null</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nv">$exitcode</span> <span class="o">=</span> <span class="nb">proc_close</span><span class="p">(</span><span class="nv">$process</span><span class="p">);</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+      <span class="nb">proc_close</span><span class="p">(</span><span class="nv">$process</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nv">$exitcode</span> <span class="o">!==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nb">error_log</span><span class="p">(</span><span class="s2">&quot;Predictor exited with code </span><span class="si">$exitcode</span><span class="s2">&quot;</span><span class="p">);</span>
+      <span class="nv">$ok</span> <span class="o">=</span> <span class="k">false</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="nv">$ok</span><span class="p">;</span>
+  <span class="p">}</span>
+
+  <span class="c1">/////////////////////////////////////////////////////////////////////////////</span>
+  <span class="k">function</span> <span class="nf">get_density</span><span class="p">(</span><span class="nv">$h</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">/////////////////////////////////////////////////////////////////////////////</span>
+    <span class="nv">$p0</span> <span class="o">=</span> <span class="mi">101325</span><span class="p">;</span>   <span class="c1">// se level standard atrmospheric pressure (Pa)</span>
+    <span class="nv">$T0</span> <span class="o">=</span> <span class="mf">288.15</span><span class="p">;</span>   <span class="c1">// sea level standard temperature (K)</span>
+    <span class="nv">$g</span> <span class="o">=</span> <span class="mf">9.80665</span><span class="p">;</span>   <span class="c1">// earth-surface gravitational acceleration (m/s^2)</span>
+    <span class="nv">$L</span> <span class="o">=</span> <span class="mf">0.0065</span><span class="p">;</span>    <span class="c1">// temperature lapse rate (K/m)</span>
+    <span class="nv">$R</span> <span class="o">=</span> <span class="mf">8.31447</span><span class="p">;</span>   <span class="c1">// universal gas constant (J/mol/K)</span>
+    <span class="nv">$M</span> <span class="o">=</span> <span class="mf">0.0289644</span><span class="p">;</span> <span class="c1">// molar mass of dry air (kg/mol)</span>
+
+    <span class="nv">$T</span> <span class="o">=</span> <span class="nv">$T0</span> <span class="o">-</span> <span class="nv">$L</span> <span class="o">*</span> <span class="nv">$h</span><span class="p">;</span> <span class="c1">// temperature at altitude h (only valid inside troposphere...)</span>
+
+    <span class="nv">$p</span> <span class="o">=</span> <span class="nv">$p0</span> <span class="o">*</span> <span class="nx">pow</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="nv">$L</span> <span class="o">*</span> <span class="nv">$h</span> <span class="o">/</span> <span class="nv">$T</span><span class="p">,</span> <span class="nv">$g</span> <span class="o">*</span> <span class="nv">$M</span> <span class="o">/</span> <span class="p">(</span><span class="nv">$R</span> <span class="o">*</span> <span class="nv">$L</span><span class="p">));</span> <span class="c1">// pressure at altitude h</span>
+
+    <span class="nv">$rho</span> <span class="o">=</span> <span class="nv">$p</span> <span class="o">*</span> <span class="nv">$M</span> <span class="o">/</span> <span class="p">(</span><span class="nv">$R</span> <span class="o">*</span> <span class="nv">$T</span><span class="p">);</span> <span class="c1">// density at altitude h (kg/m^3)</span>
+
+    <span class="k">return</span> <span class="nv">$rho</span><span class="p">;</span>
+  <span class="p">}</span>
+
+  <span class="c1">/////////////////////////////////////////////////////////////////////////////</span>
+  <span class="k">function</span> <span class="nf">get_density2</span><span class="p">(</span><span class="nv">$altitude</span><span class="p">,</span> <span class="nv">$deltaTemperature</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">/////////////////////////////////////////////////////////////////////////////</span>
+    <span class="nv">$airMolWeight</span>     <span class="o">=</span> <span class="mf">28.9644</span><span class="p">;</span>  <span class="c1">// Molecular weight of air</span>
+    <span class="nv">$densitySL</span>        <span class="o">=</span> <span class="mf">1.225</span><span class="p">;</span>    <span class="c1">// Density at sea level [kg/m3]</span>
+    <span class="nv">$pressureSL</span>       <span class="o">=</span> <span class="mi">101325</span><span class="p">;</span>   <span class="c1">// Pressure at sea level [Pa]</span>
+    <span class="nv">$temperatureSL</span>    <span class="o">=</span> <span class="mf">288.15</span><span class="p">;</span>   <span class="c1">// Temperature at sea level [deg K]</span>
+    <span class="nv">$gamma</span>            <span class="o">=</span> <span class="mf">1.4</span><span class="p">;</span>
+    <span class="nv">$gravity</span>          <span class="o">=</span> <span class="mf">9.80665</span><span class="p">;</span>  <span class="c1">// Acceleration of gravity [m/s2]</span>
+    <span class="nv">$tempGrad</span>         <span class="o">=</span> <span class="o">-</span><span class="mf">0.0065</span><span class="p">;</span>  <span class="c1">// Temperature gradient [deg K/m]</span>
+    <span class="nv">$RGas</span>             <span class="o">=</span> <span class="mf">8.31432</span><span class="p">;</span>  <span class="c1">// Gas constant [kg/Mol/K]</span>
+    <span class="nv">$R</span>                <span class="o">=</span> <span class="mf">287.053</span><span class="p">;</span>  <span class="c1">//</span>
+
+    <span class="nv">$altitudes</span>    <span class="o">=</span> <span class="k">array</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">11000</span><span class="p">,</span> <span class="mi">20000</span><span class="p">,</span> <span class="mi">32000</span><span class="p">,</span> <span class="mi">47000</span><span class="p">,</span> <span class="mi">51000</span><span class="p">,</span> <span class="mi">71000</span><span class="p">,</span> <span class="mi">84852</span><span class="p">);</span>
+    <span class="nv">$pressureRels</span> <span class="o">=</span> <span class="k">array</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">2.23361105092158e-1</span><span class="p">,</span> <span class="mf">5.403295010784876e-2</span><span class="p">,</span>
+                          <span class="mf">8.566678359291667e-3</span><span class="p">,</span> <span class="mf">1.0945601337771144e-3</span><span class="p">,</span> <span class="mf">6.606353132858367e-4</span><span class="p">,</span>
+                          <span class="mf">3.904683373343926e-5</span><span class="p">,</span> <span class="mf">3.6850095235747942e-6</span><span class="p">);</span>
+    <span class="nv">$temperatures</span> <span class="o">=</span> <span class="k">array</span><span class="p">(</span><span class="mf">288.15</span><span class="p">,</span> <span class="mf">216.65</span><span class="p">,</span> <span class="mf">216.65</span><span class="p">,</span> <span class="mf">228.65</span><span class="p">,</span> <span class="mf">270.65</span><span class="p">,</span> <span class="mf">270.65</span><span class="p">,</span> <span class="mf">214.65</span><span class="p">,</span> <span class="mf">186.946</span><span class="p">);</span>
+    <span class="nv">$tempGrads</span>    <span class="o">=</span> <span class="k">array</span><span class="p">(</span><span class="o">-</span><span class="mf">6.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">2.8</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.8</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+    <span class="nv">$gMR</span> <span class="o">=</span> <span class="nv">$gravity</span> <span class="o">*</span> <span class="nv">$airMolWeight</span> <span class="o">/</span> <span class="nv">$RGas</span><span class="p">;</span>
+
+    <span class="nv">$i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">if</span><span class="p">(</span><span class="nv">$altitude</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">while</span><span class="p">(</span><span class="nv">$altitude</span> <span class="o">&gt;</span> <span class="nv">$altitudes</span><span class="p">[</span><span class="nv">$i</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span> <span class="nv">$i</span> <span class="o">=</span> <span class="nv">$i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span> 
+    <span class="p">}</span>
+
+    <span class="nv">$baseTemp</span>        <span class="o">=</span> <span class="nv">$temperatures</span><span class="p">[</span><span class="nv">$i</span><span class="p">];</span>
+    <span class="nv">$tempGrad</span>        <span class="o">=</span> <span class="nv">$tempGrads</span><span class="p">[</span><span class="nv">$i</span><span class="p">]</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">;</span>
+    <span class="nv">$pressureRelBase</span> <span class="o">=</span> <span class="nv">$pressureRels</span><span class="p">[</span><span class="nv">$i</span><span class="p">];</span>
+    <span class="nv">$deltaAltitude</span>   <span class="o">=</span> <span class="nv">$altitude</span> <span class="o">-</span> <span class="nv">$altitudes</span><span class="p">[</span><span class="nv">$i</span><span class="p">];</span>
+    <span class="nv">$temperature</span>     <span class="o">=</span> <span class="nv">$baseTemp</span> <span class="o">+</span> <span class="nv">$tempGrad</span> <span class="o">*</span> <span class="nv">$deltaAltitude</span><span class="p">;</span>
+
+    <span class="c1">// Calculate relative pressure</span>
+    <span class="k">if</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="nv">$tempGrad</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-10</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nv">$pressureRel</span> <span class="o">=</span> <span class="nv">$pressureRelBase</span> <span class="o">*</span> <span class="nb">exp</span><span class="p">(</span><span class="o">-</span><span class="nv">$gMR</span> <span class="o">*</span> <span class="nv">$deltaAltitude</span> <span class="o">/</span> <span class="mf">1000.0</span> <span class="o">/</span> <span class="nv">$baseTemp</span><span class="p">);</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+      <span class="nv">$pressureRel</span> <span class="o">=</span> <span class="nv">$pressureRelBase</span> <span class="o">*</span> <span class="nx">pow</span><span class="p">(</span><span class="nv">$baseTemp</span> <span class="o">/</span> <span class="nv">$temperature</span><span class="p">,</span> <span class="nv">$gMR</span> <span class="o">/</span> <span class="nv">$tempGrad</span> <span class="o">/</span> <span class="mf">1000.0</span><span class="p">);</span>
+    <span class="p">}</span>
+  
+    <span class="c1">// Add temperature offset</span>
+    <span class="nv">$temperature</span>  <span class="o">=</span> <span class="nv">$temperature</span> <span class="o">+</span> <span class="nv">$deltaTemperature</span><span class="p">;</span>
+
+    <span class="nv">$speedOfSound</span> <span class="o">=</span> <span class="nx">sqrt</span><span class="p">(</span><span class="nv">$gamma</span> <span class="o">*</span> <span class="nv">$R</span> <span class="o">*</span> <span class="nv">$temperature</span><span class="p">);</span>
+    <span class="nv">$pressure</span>     <span class="o">=</span> <span class="nv">$pressureRel</span> <span class="o">*</span> <span class="nv">$pressureSL</span><span class="p">;</span>
+    <span class="nv">$density</span>      <span class="o">=</span> <span class="nv">$densitySL</span> <span class="o">*</span> <span class="nv">$pressureRel</span> <span class="o">*</span> <span class="nv">$temperatureSL</span> <span class="o">/</span> <span class="nv">$temperature</span> <span class="p">;</span>
+
+    <span class="k">return</span> <span class="nv">$density</span><span class="p">;</span>
+  <span class="p">}</span>  
+
+  <span class="c1">/////////////////////////////////////////////////////////////////////////////</span>
+  <span class="k">function</span> <span class="nf">sea_level_descent_rate</span><span class="p">(</span><span class="nv">$v</span><span class="p">,</span> <span class="nv">$h</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">/////////////////////////////////////////////////////////////////////////////</span>
+    <span class="nv">$rho</span> <span class="o">=</span> <span class="nx">get_density2</span><span class="p">(</span><span class="nv">$h</span><span class="p">);</span>
+    <span class="k">return</span> <span class="nx">sqrt</span><span class="p">((</span><span class="nv">$rho</span> <span class="o">/</span> <span class="mf">1.22</span><span class="p">)</span> <span class="o">*</span> <span class="nx">pow</span><span class="p">(</span><span class="nv">$v</span><span class="p">,</span> <span class="mi">2</span><span class="p">));</span>
+  <span class="p">}</span>
+
+  <span class="k">function</span> <span class="nf">find_dataset</span><span class="p">(</span><span class="nv">$root</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">#$dir = $root.&quot;/tawhiri/datasets&quot;;</span>
+    <span class="nv">$dir</span> <span class="o">=</span> <span class="nv">$root</span><span class="p">;</span>
+    <span class="nv">$files</span> <span class="o">=</span> <span class="nb">scandir</span><span class="p">(</span><span class="nv">$dir</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+    <span class="k">foreach</span> <span class="p">(</span><span class="nv">$files</span> <span class="k">as</span> <span class="nv">$file</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nv">$p</span> <span class="o">=</span> <span class="nb">strptime</span><span class="p">(</span><span class="nv">$file</span><span class="p">,</span> <span class="s2">&quot;%Y%m%d%H&quot;</span><span class="p">);</span>
+      <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nv">$p</span> <span class="o">||</span> <span class="nv">$p</span><span class="p">[</span><span class="s2">&quot;unparsed&quot;</span><span class="p">])</span>
+        <span class="k">continue</span><span class="p">;</span>
+
+      <span class="nv">$ts</span> <span class="o">=</span> <span class="nb">gmmktime</span><span class="p">(</span><span class="nv">$p</span><span class="p">[</span><span class="s2">&quot;tm_hour&quot;</span><span class="p">],</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nv">$p</span><span class="p">[</span><span class="s2">&quot;tm_mon&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nv">$p</span><span class="p">[</span><span class="s2">&quot;tm_mday&quot;</span><span class="p">],</span> <span class="nv">$p</span><span class="p">[</span><span class="s2">&quot;tm_year&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1900</span><span class="p">);</span>
+      <span class="nb">assert</span><span class="p">(</span><span class="nv">$ts</span><span class="p">);</span>
+
+      <span class="k">return</span> <span class="k">array</span><span class="p">(</span><span class="nv">$dir</span><span class="o">.</span><span class="s2">&quot;/&quot;</span><span class="o">.</span><span class="nv">$file</span><span class="p">,</span> <span class="nv">$ts</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="k">null</span><span class="p">;</span>
+  <span class="p">}</span>
+
+  <span class="c1">/////////////////////////////////////////////////////////////////////////////</span>
+  <span class="k">function</span> <span class="nf">get_prediction</span><span class="p">(</span><span class="nv">$lat</span><span class="p">,</span> <span class="nv">$lon</span><span class="p">,</span> <span class="nv">$alt</span><span class="p">,</span> <span class="nv">$timestamp</span><span class="p">,</span> <span class="nv">$ascent_rate</span><span class="p">,</span> <span class="nv">$descent_rate</span><span class="p">,</span> <span class="nv">$burst_alt</span><span class="p">,</span> <span class="nv">$descending</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">/////////////////////////////////////////////////////////////////////////////</span>
+    <span class="cm">/*</span>
+<span class="cm">    $lat = 52.2135;</span>
+<span class="cm">    $lon = 0.0964;</span>
+<span class="cm">    $alt = 200;</span>
+<span class="cm">    $timestamp = 1267488000;</span>
+<span class="cm">    $ascent_rate = 3;</span>
+<span class="cm">    $descent_rate = 5;</span>
+<span class="cm">    $burst_alt = 30000;</span>
+<span class="cm">    $descending = false;</span>
+<span class="cm">    */</span>
+
+    <span class="nb">date_default_timezone_set</span><span class="p">(</span><span class="s1">&#39;UTC&#39;</span><span class="p">);</span>
+    <span class="c1">//$timestamp -= 60*60*9.5; // PROJECT HORUS, TAKE THIS OUT LATER!!!!</span>
+
+    <span class="nv">$cwd</span> <span class="o">=</span> <span class="s2">&quot;/var/www/predict&quot;</span><span class="p">;</span>
+    <span class="nv">$newdataset_dir</span> <span class="o">=</span> <span class="s2">&quot;/srv/tawhiri-datasets&quot;</span><span class="p">;</span>
+    <span class="nv">$pred_binary</span> <span class="o">=</span> <span class="nv">$cwd</span><span class="o">.</span><span class="s2">&quot;/pred_src/pred&quot;</span><span class="p">;</span>
+    <span class="nv">$dataset</span> <span class="o">=</span> <span class="nx">find_dataset</span><span class="p">(</span><span class="nv">$newdataset_dir</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nv">$dataset</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nb">error_log</span><span class="p">(</span><span class="s2">&quot;Couldn&#39;t find any dataset to use for live prediction&quot;</span><span class="p">);</span>
+      <span class="k">return</span> <span class="nb">json_encode</span><span class="p">(</span><span class="k">array</span><span class="p">(</span><span class="s2">&quot;errors&quot;</span> <span class="o">=&gt;</span> <span class="k">array</span><span class="p">(</span><span class="s2">&quot;Couldn&#39;t find a dataset&quot;</span><span class="p">),</span> <span class="s2">&quot;warnings&quot;</span> <span class="o">=&gt;</span> <span class="k">array</span><span class="p">()));</span>
+    <span class="p">}</span>
+
+    <span class="nv">$cmd</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">$pred_binary</span><span class="s2">  -i </span><span class="si">${</span><span class="nv">dataset[0]</span><span class="si">}</span><span class="s2"> -s </span><span class="si">${</span><span class="nv">dataset[1]</span><span class="si">}</span><span class="s2"> &quot;</span> <span class="o">.</span> <span class="p">(</span><span class="nv">$descending</span> <span class="o">?</span> <span class="s2">&quot; -d&quot;</span> <span class="o">:</span> <span class="s2">&quot;&quot;</span><span class="p">);</span>
+  
+    <span class="c1">// Typical RMS values for windspeed error can be found from</span>
+    <span class="c1">// http://www.emc.ncep.noaa.gov/gmb/STATS/html/rmsve82.html</span>
+
+    <span class="nv">$ini</span>  <span class="o">=</span> <span class="s2">&quot;[launch-site]</span><span class="se">\n</span><span class="s2">&quot;</span>
+          <span class="o">.</span> <span class="s2">&quot;latitude   = </span><span class="si">$lat</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="c1">// degrees</span>
+          <span class="o">.</span> <span class="s2">&quot;longitude  = </span><span class="si">$lon</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="c1">// degrees</span>
+          <span class="o">.</span> <span class="s2">&quot;altitude   = </span><span class="si">$alt</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="c1">// meters</span>
+          <span class="o">.</span> <span class="s2">&quot;[launch-time]</span><span class="se">\n</span><span class="s2">&quot;</span>
+          <span class="o">.</span> <span class="s2">&quot;year       = &quot;</span> <span class="o">.</span> <span class="nb">gmdate</span><span class="p">(</span><span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="nv">$timestamp</span><span class="p">)</span> <span class="o">.</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+          <span class="o">.</span> <span class="s2">&quot;month      = &quot;</span> <span class="o">.</span> <span class="nb">gmdate</span><span class="p">(</span><span class="s2">&quot;n&quot;</span><span class="p">,</span> <span class="nv">$timestamp</span><span class="p">)</span> <span class="o">.</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+          <span class="o">.</span> <span class="s2">&quot;day        = &quot;</span> <span class="o">.</span> <span class="nb">gmdate</span><span class="p">(</span><span class="s2">&quot;j&quot;</span><span class="p">,</span> <span class="nv">$timestamp</span><span class="p">)</span> <span class="o">.</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+          <span class="o">.</span> <span class="s2">&quot;hour       = &quot;</span> <span class="o">.</span> <span class="nb">gmdate</span><span class="p">(</span><span class="s2">&quot;G&quot;</span><span class="p">,</span> <span class="nv">$timestamp</span><span class="p">)</span> <span class="o">.</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+          <span class="o">.</span> <span class="s2">&quot;minute     = &quot;</span> <span class="o">.</span> <span class="p">((</span><span class="nx">int</span><span class="p">)</span> <span class="nb">gmdate</span><span class="p">(</span><span class="s2">&quot;i&quot;</span><span class="p">,</span> <span class="nv">$timestamp</span><span class="p">))</span> <span class="o">.</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+          <span class="o">.</span> <span class="s2">&quot;second     = &quot;</span> <span class="o">.</span> <span class="p">((</span><span class="nx">int</span><span class="p">)</span> <span class="nb">gmdate</span><span class="p">(</span><span class="s2">&quot;s&quot;</span><span class="p">,</span> <span class="nv">$timestamp</span><span class="p">))</span> <span class="o">.</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+          <span class="o">.</span> <span class="s2">&quot;[atmosphere]</span><span class="se">\n</span><span class="s2">&quot;</span>
+          <span class="o">.</span> <span class="s2">&quot;wind-error     = 0</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="c1">// m/s - RMS error for windspeed</span>
+          <span class="o">.</span> <span class="s2">&quot;[altitude-model]</span><span class="se">\n</span><span class="s2">&quot;</span>
+          <span class="o">.</span> <span class="s2">&quot;ascent-rate    = </span><span class="si">$ascent_rate</span><span class="se">\n</span><span class="s2">&quot;</span>   <span class="c1">// m/s</span>
+          <span class="o">.</span> <span class="s2">&quot;descent-rate   = </span><span class="si">$descent_rate</span><span class="se">\n</span><span class="s2">&quot;</span>  <span class="c1">// m/s at sea level</span>
+          <span class="o">.</span> <span class="s2">&quot;burst-altitude = </span><span class="si">$burst_alt</span><span class="se">\n</span><span class="s2">&quot;</span>     <span class="c1">// m</span>
+          <span class="o">.</span> <span class="s2">&quot;float-time     = 0</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span> <span class="c1">// s - float time at apogee (not implemented)</span>
+    
+    <span class="c1">//echo $ini;</span>
+    
+    <span class="nv">$proc_ok</span> <span class="o">=</span> <span class="nx">proc_exec</span><span class="p">(</span><span class="nv">$cmd</span><span class="p">,</span> <span class="nv">$cwd</span><span class="p">,</span> <span class="nv">$ini</span><span class="p">,</span> <span class="nv">$stdout</span><span class="p">,</span> <span class="nv">$stderr</span><span class="p">);</span>
+
+    <span class="c1">//echo &quot;&lt;pre&gt;$stdout&lt;/pre&gt;&quot;;</span>
+    <span class="c1">//echo &quot;&lt;pre&gt;$stderr&lt;/pre&gt;&quot;;</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nv">$proc_ok</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="nb">json_encode</span><span class="p">(</span><span class="k">array</span><span class="p">(</span><span class="s2">&quot;errors&quot;</span> <span class="o">=&gt;</span> <span class="k">array</span><span class="p">(</span><span class="s2">&quot;Process timed out&quot;</span><span class="p">),</span> <span class="s2">&quot;warnings&quot;</span> <span class="o">=&gt;</span> <span class="k">array</span><span class="p">()));</span>
+    <span class="p">}</span>
+
+    <span class="nv">$errors</span> <span class="o">=</span> <span class="k">array</span><span class="p">();</span>
+    <span class="k">foreach</span> <span class="p">(</span><span class="k">array</span><span class="p">(</span><span class="s2">&quot;ERROR&quot;</span><span class="p">,</span> <span class="s2">&quot;Assertion&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="nv">$bad_word</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nv">$where_derp</span> <span class="o">=</span> <span class="nb">strpos</span><span class="p">(</span><span class="nv">$stderr</span><span class="p">,</span> <span class="nv">$bad_word</span><span class="p">);</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nv">$where_derp</span> <span class="o">!==</span> <span class="k">false</span><span class="p">)</span>
+        <span class="nv">$errors</span><span class="p">[]</span> <span class="o">=</span> <span class="nv">$where_derp</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span><span class="p">(</span><span class="nb">count</span><span class="p">(</span><span class="nv">$errors</span><span class="p">))</span> <span class="p">{</span>
+      <span class="nv">$first_error</span> <span class="o">=</span> <span class="nx">min</span><span class="p">(</span><span class="nv">$errors</span><span class="p">);</span>
+      <span class="nv">$end_of_line</span> <span class="o">=</span> <span class="nb">strpos</span><span class="p">(</span><span class="nv">$stderr</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nv">$first_error</span><span class="p">);</span>
+      <span class="nv">$derezzed</span> <span class="o">=</span> <span class="nx">substr</span><span class="p">(</span><span class="nv">$stderr</span><span class="p">,</span> <span class="nv">$first_error</span><span class="p">,</span> <span class="nv">$end_of_line</span> <span class="o">-</span> <span class="nv">$first_error</span><span class="p">);</span>
+      <span class="nv">$fall</span> <span class="o">=</span> <span class="k">array</span><span class="p">(</span><span class="s2">&quot;warnings&quot;</span> <span class="o">=&gt;</span> <span class="k">array</span><span class="p">(),</span> <span class="s2">&quot;errors&quot;</span> <span class="o">=&gt;</span> <span class="k">array</span><span class="p">(</span><span class="nv">$derezzed</span><span class="p">));</span>
+      <span class="nb">error_log</span><span class="p">(</span><span class="s2">&quot;prediction failed: &quot;</span> <span class="o">.</span> <span class="nv">$derezzed</span><span class="p">);</span>
+      <span class="k">return</span> <span class="nb">json_encode</span><span class="p">(</span><span class="nv">$fall</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="nv">$points</span> <span class="o">=</span> <span class="k">array</span><span class="p">();</span>
+    
+    <span class="c1">// add current location</span>
+    <span class="nv">$points</span><span class="p">[]</span> <span class="o">=</span> <span class="k">array</span><span class="p">(</span><span class="s2">&quot;time&quot;</span> <span class="o">=&gt;</span> <span class="nv">$timestamp</span><span class="p">,</span>
+                      <span class="s2">&quot;lat&quot;</span> <span class="o">=&gt;</span> <span class="nv">$lat</span><span class="p">,</span>
+                      <span class="s2">&quot;lon&quot;</span> <span class="o">=&gt;</span> <span class="nv">$lon</span><span class="p">,</span>
+                      <span class="s2">&quot;alt&quot;</span> <span class="o">=&gt;</span> <span class="nv">$alt</span><span class="p">);</span>
+                      
+    <span class="nv">$num_points</span> <span class="o">=</span> <span class="nb">preg_match_all</span><span class="p">(</span><span class="s1">&#39;/([^,]*),([^,]*),([^,]*),(.*)/&#39;</span><span class="p">,</span> <span class="nv">$stdout</span><span class="p">,</span> <span class="nv">$matches</span><span class="p">,</span> <span class="nx">PREG_SET_ORDER</span><span class="p">);</span>
+    <span class="k">if</span><span class="p">(</span><span class="nv">$num_points</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">foreach</span><span class="p">(</span><span class="nv">$matches</span> <span class="k">as</span> <span class="nv">$p</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nv">$points</span><span class="p">[]</span> <span class="o">=</span> <span class="k">array</span><span class="p">(</span><span class="s2">&quot;time&quot;</span> <span class="o">=&gt;</span> <span class="nx">trim</span><span class="p">(</span><span class="nv">$p</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+                          <span class="s2">&quot;lat&quot;</span> <span class="o">=&gt;</span> <span class="nx">trim</span><span class="p">(</span><span class="nv">$p</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span>
+                          <span class="s2">&quot;lon&quot;</span> <span class="o">=&gt;</span> <span class="nx">trim</span><span class="p">(</span><span class="nv">$p</span><span class="p">[</span><span class="mi">3</span><span class="p">]),</span>
+                          <span class="s2">&quot;alt&quot;</span> <span class="o">=&gt;</span> <span class="nx">trim</span><span class="p">(</span><span class="nv">$p</span><span class="p">[</span><span class="mi">4</span><span class="p">]));</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="nb">json_encode</span><span class="p">(</span><span class="nv">$points</span><span class="p">);</span>
+  <span class="p">}</span>
+  
+  <span class="c1">/////////////////////////////////////////////////////////////////////////////</span>
+  <span class="k">function</span> <span class="nf">get_stats</span><span class="p">(</span><span class="nv">$mission_id</span><span class="p">,</span> <span class="nv">$vehicle</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">/////////////////////////////////////////////////////////////////////////////</span>
+    <span class="nb">date_default_timezone_set</span><span class="p">(</span><span class="s1">&#39;UTC&#39;</span><span class="p">);</span>
+    
+    <span class="nv">$positions_query</span> <span class="o">=</span> <span class="nx">pg_query</span><span class="p">(</span><span class="s2">&quot;SELECT extract(&#39;epoch&#39; FROM gps_time)::int as gps_time, gps_lat, gps_lon, gps_alt, sequence FROM positions WHERE mission_id = &#39;</span><span class="si">$mission_id</span><span class="s2">&#39; AND vehicle = &#39;&quot;</span><span class="o">.</span><span class="nb">pg_escape_string</span><span class="p">(</span><span class="nv">$vehicle</span><span class="p">)</span><span class="o">.</span><span class="s2">&quot;&#39; AND picture = &#39;&#39; ORDER BY positions.gps_time, sequence&quot;</span><span class="p">);</span>
+    
+    <span class="nv">$curr</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="nv">$window</span> <span class="o">=</span> <span class="mi">5</span><span class="p">;</span>
+    <span class="nv">$sample</span> <span class="o">=</span> <span class="k">array</span><span class="p">();</span>
+    <span class="nv">$count</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="nv">$prev_sequence</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="nv">$prev_time</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    
+    <span class="nv">$rate</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="nv">$altitude</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="nv">$sample_altitude</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="c1">// average altitude over the sample window</span>
+    <span class="nv">$max_rate</span> <span class="o">=</span> <span class="o">-</span><span class="nx">PHP_INT_MAX</span><span class="p">;</span>
+    <span class="nv">$min_rate</span> <span class="o">=</span> <span class="nx">PHP_INT_MAX</span><span class="p">;</span>
+    <span class="nv">$max_altitude</span> <span class="o">=</span> <span class="o">-</span><span class="nx">PHP_INT_MAX</span><span class="p">;</span>
+    <span class="nv">$min_altitude</span> <span class="o">=</span> <span class="nx">PHP_INT_MAX</span><span class="p">;</span>
+    <span class="nv">$curr_position</span> <span class="o">=</span> <span class="k">null</span><span class="p">;</span>
+    <span class="k">while</span><span class="p">(</span><span class="nv">$position</span> <span class="o">=</span> <span class="nb">pg_fetch_assoc</span><span class="p">(</span><span class="nv">$positions_query</span><span class="p">))</span> <span class="p">{</span>
+      <span class="k">if</span><span class="p">(</span><span class="nv">$prev_sequence</span> <span class="o">==</span> <span class="nv">$position</span><span class="p">[</span><span class="s2">&quot;sequence&quot;</span><span class="p">]</span> <span class="o">&amp;&amp;</span> <span class="nv">$prev_sequence</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">continue</span><span class="p">;</span> <span class="c1">// skip same sequence numbers</span>
+      <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="nv">$prev_sequence</span> <span class="o">=</span> <span class="nv">$position</span><span class="p">[</span><span class="s2">&quot;sequence&quot;</span><span class="p">];</span>
+      <span class="p">}</span>
+      <span class="k">if</span><span class="p">(</span><span class="nv">$prev_time</span> <span class="o">==</span> <span class="nv">$position</span><span class="p">[</span><span class="s2">&quot;gps_time&quot;</span><span class="p">]</span> <span class="o">&amp;&amp;</span> <span class="nv">$prev_time</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">continue</span><span class="p">;</span> <span class="c1">// skip same times</span>
+      <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="nv">$prev_time</span> <span class="o">=</span> <span class="nv">$position</span><span class="p">[</span><span class="s2">&quot;gps_time&quot;</span><span class="p">];</span>
+      <span class="p">}</span>
+      <span class="nv">$sample</span><span class="p">[</span><span class="nv">$curr</span><span class="p">]</span> <span class="o">=</span> <span class="k">array</span><span class="p">(</span><span class="s2">&quot;time&quot;</span> <span class="o">=&gt;</span> <span class="nv">$position</span><span class="p">[</span><span class="s2">&quot;gps_time&quot;</span><span class="p">],</span> <span class="s2">&quot;altitude&quot;</span> <span class="o">=&gt;</span> <span class="nv">$position</span><span class="p">[</span><span class="s2">&quot;gps_alt&quot;</span><span class="p">]);</span>
+      <span class="nv">$curr</span> <span class="o">=</span> <span class="p">(</span><span class="nv">$curr</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="nv">$window</span><span class="p">;</span>
+      <span class="nv">$count</span><span class="o">++</span><span class="p">;</span>
+      
+      <span class="c1">// if we have one complete sample, calculate the rate</span>
+      <span class="k">if</span><span class="p">(</span><span class="nv">$count</span> <span class="o">&gt;=</span> <span class="nv">$window</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nv">$rate</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="nv">$prev_s</span> <span class="o">=</span> <span class="nv">$sample</span><span class="p">[</span><span class="nv">$curr</span><span class="p">];</span>
+        <span class="k">for</span><span class="p">(</span><span class="nv">$i</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nv">$i</span> <span class="o">&lt;</span> <span class="nv">$window</span><span class="p">;</span> <span class="nv">$i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+          <span class="nv">$curr_s</span> <span class="o">=</span> <span class="nv">$sample</span><span class="p">[(</span><span class="nv">$curr</span> <span class="o">+</span> <span class="nv">$i</span><span class="p">)</span> <span class="o">%</span> <span class="nv">$window</span><span class="p">];</span>
+          <span class="nv">$delta_alt</span> <span class="o">=</span> <span class="nv">$curr_s</span><span class="p">[</span><span class="s2">&quot;altitude&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="nv">$prev_s</span><span class="p">[</span><span class="s2">&quot;altitude&quot;</span><span class="p">];</span>
+          <span class="nv">$delta_time</span> <span class="o">=</span> <span class="nv">$curr_s</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="nv">$prev_s</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">];</span>
+          <span class="nv">$rate</span> <span class="o">+=</span> <span class="nv">$delta_alt</span> <span class="o">/</span> <span class="nv">$delta_time</span><span class="p">;</span>
+          <span class="nv">$prev_s</span> <span class="o">=</span> <span class="nv">$curr_s</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="nv">$rate</span> <span class="o">/=</span> <span class="nv">$window</span><span class="p">;</span>
+        
+        <span class="nv">$min_rate</span> <span class="o">=</span> <span class="nx">min</span><span class="p">(</span><span class="nv">$rate</span><span class="p">,</span> <span class="nv">$min_rate</span><span class="p">);</span>
+        <span class="nv">$max_rate</span> <span class="o">=</span> <span class="nx">max</span><span class="p">(</span><span class="nv">$rate</span><span class="p">,</span> <span class="nv">$max_rate</span><span class="p">);</span>
+
+        <span class="nv">$a1</span> <span class="o">=</span> <span class="nv">$sample</span><span class="p">[</span><span class="nv">$curr</span><span class="p">][</span><span class="s2">&quot;altitude&quot;</span><span class="p">];</span>
+        <span class="nv">$a2</span> <span class="o">=</span> <span class="nv">$sample</span><span class="p">[(</span><span class="nv">$curr</span> <span class="o">+</span> <span class="nv">$window</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="nv">$window</span><span class="p">][</span><span class="s2">&quot;altitude&quot;</span><span class="p">];</span>
+        <span class="nv">$sample_altitude</span> <span class="o">=</span> <span class="p">(</span><span class="nv">$a1</span> <span class="o">+</span> <span class="nv">$a2</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">;</span>
+      <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="nv">$sample_altitude</span> <span class="o">=</span> <span class="nv">$position</span><span class="p">[</span><span class="s2">&quot;gps_alt&quot;</span><span class="p">];</span>
+      <span class="p">}</span>
+      
+      <span class="nv">$altitude</span> <span class="o">=</span> <span class="nv">$position</span><span class="p">[</span><span class="s2">&quot;gps_alt&quot;</span><span class="p">];</span>
+      <span class="nv">$min_altitude</span> <span class="o">=</span> <span class="nx">min</span><span class="p">(</span><span class="nv">$altitude</span><span class="p">,</span> <span class="nv">$min_altitude</span><span class="p">);</span>
+      <span class="nv">$max_altitude</span> <span class="o">=</span> <span class="nx">max</span><span class="p">(</span><span class="nv">$altitude</span><span class="p">,</span> <span class="nv">$max_altitude</span><span class="p">);</span>
+      
+      <span class="nv">$curr_position</span> <span class="o">=</span> <span class="nv">$position</span><span class="p">;</span>
+      <span class="c1">//printf(&quot;Rate: $rate\n&quot;);</span>
+    <span class="p">}</span>
+    
+    <span class="k">return</span> <span class="k">array</span><span class="p">(</span><span class="s2">&quot;rate&quot;</span> <span class="o">=&gt;</span> <span class="nv">$rate</span><span class="p">,</span>
+                 <span class="s2">&quot;max_rate&quot;</span> <span class="o">=&gt;</span> <span class="nv">$max_rate</span><span class="p">,</span>
+                 <span class="s2">&quot;min_rate&quot;</span> <span class="o">=&gt;</span> <span class="nv">$min_rate</span><span class="p">,</span>
+                 <span class="s2">&quot;altitude&quot;</span> <span class="o">=&gt;</span> <span class="nv">$altitude</span><span class="p">,</span>
+                 <span class="s2">&quot;max_altitude&quot;</span> <span class="o">=&gt;</span> <span class="nv">$max_altitude</span><span class="p">,</span>
+                 <span class="s2">&quot;min_altitude&quot;</span> <span class="o">=&gt;</span> <span class="nv">$min_altitude</span><span class="p">,</span>
+                 <span class="s2">&quot;sample_altitude&quot;</span> <span class="o">=&gt;</span> <span class="nv">$sample_altitude</span><span class="p">,</span>
+                 <span class="s2">&quot;latitude&quot;</span> <span class="o">=&gt;</span> <span class="nv">$curr_position</span><span class="p">[</span><span class="s2">&quot;gps_lat&quot;</span><span class="p">],</span>
+                 <span class="s2">&quot;longitude&quot;</span> <span class="o">=&gt;</span> <span class="nv">$curr_position</span><span class="p">[</span><span class="s2">&quot;gps_lon&quot;</span><span class="p">],</span>
+                 <span class="s2">&quot;time&quot;</span> <span class="o">=&gt;</span> <span class="nv">$curr_position</span><span class="p">[</span><span class="s2">&quot;gps_time&quot;</span><span class="p">]);</span>
+  <span class="p">}</span>
+  
+  <span class="c1">/////////////////////////////////////////////////////////////////////////////</span>
+  <span class="k">function</span> <span class="nf">update_prediction</span><span class="p">(</span><span class="nv">$mission_id</span><span class="p">,</span> <span class="nv">$vehicle</span><span class="p">,</span> <span class="nv">$force_descent</span> <span class="o">=</span> <span class="k">false</span><span class="p">,</span> <span class="nv">$force_predict</span> <span class="o">=</span> <span class="k">false</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">/////////////////////////////////////////////////////////////////////////////</span>
+    <span class="k">global</span> <span class="nv">$default_burst_alt</span><span class="p">,</span> <span class="nv">$default_ascent_rate</span><span class="p">,</span> <span class="nv">$default_descent_rate</span><span class="p">;</span>
+    <span class="k">global</span> <span class="nv">$debug</span><span class="p">,</span> <span class="nv">$throttle_predictions</span><span class="p">,</span> <span class="nv">$per_vehicle_prediction</span><span class="p">;</span>
+  
+    <span class="k">if</span> <span class="p">(</span><span class="nv">$force_descent</span><span class="p">)</span>
+      <span class="nv">$force_predict</span> <span class="o">=</span> <span class="k">true</span><span class="p">;</span>
+
+    <span class="c1">// Load values for per-mission settings if they exist</span>
+    <span class="k">if</span><span class="p">(</span><span class="nb">is_array</span><span class="p">(</span><span class="nv">$per_vehicle_prediction</span><span class="p">)</span> <span class="o">&amp;&amp;</span>
+       <span class="nb">is_array</span><span class="p">(</span><span class="nv">$per_vehicle_prediction</span><span class="p">[</span><span class="nv">$vehicle</span><span class="p">]))</span>
+    <span class="p">{</span>
+      <span class="nv">$p</span> <span class="o">=</span> <span class="nv">$per_vehicle_prediction</span><span class="p">[</span><span class="nv">$vehicle</span><span class="p">];</span>
+      <span class="k">if</span><span class="p">(</span><span class="nb">isset</span><span class="p">(</span><span class="nv">$p</span><span class="p">[</span><span class="s1">&#39;burst_alt&#39;</span><span class="p">]))</span>    <span class="nv">$default_burst_alt</span>    <span class="o">=</span> <span class="nv">$p</span><span class="p">[</span><span class="s1">&#39;burst_alt&#39;</span><span class="p">];</span>
+      <span class="k">if</span><span class="p">(</span><span class="nb">isset</span><span class="p">(</span><span class="nv">$p</span><span class="p">[</span><span class="s1">&#39;ascent_rate&#39;</span><span class="p">]))</span>  <span class="nv">$default_ascent_rate</span>  <span class="o">=</span> <span class="nv">$p</span><span class="p">[</span><span class="s1">&#39;ascent_rate&#39;</span><span class="p">];</span>
+      <span class="k">if</span><span class="p">(</span><span class="nb">isset</span><span class="p">(</span><span class="nv">$p</span><span class="p">[</span><span class="s1">&#39;descent_rate&#39;</span><span class="p">]))</span> <span class="nv">$default_descent_rate</span> <span class="o">=</span> <span class="nv">$p</span><span class="p">[</span><span class="s1">&#39;descent_rate&#39;</span><span class="p">];</span>
+    <span class="p">}</span>
+
+    <span class="cm">/* djr61: this lock used to just wrap the select/delete/insert sequence below.</span>
+<span class="cm">     * However, the &#39;get_stats&#39; call is /really/ slow, and since all the track.php hits for a new</span>
+<span class="cm">     * string arrive pretty much simultaneuosly, they&#39;ll all race past the throttle below and</span>
+<span class="cm">     * all call get_stats simultaneously.</span>
+<span class="cm">     * This means that the LOCK TABLE statement will take the same time as a get_stats call</span>
+<span class="cm">     * for those that lose the race. This is a shame; a lot of wasted time; but it&#39;s a strict</span>
+<span class="cm">     * improvement on before (and that wasted time is spent idle, crucially).</span>
+<span class="cm">     * If someone wants to do better locking (say, advisory locking, with vehicle granularity</span>
+<span class="cm">     * and then if you can&#39;t take the lock, return) then please do. */</span>
+    <span class="nx">pg_query</span><span class="p">(</span><span class="s2">&quot;BEGIN&quot;</span><span class="p">);</span>
+    <span class="nx">pg_query</span><span class="p">(</span><span class="s2">&quot;LOCK TABLE predictions&quot;</span><span class="p">);</span>
+
+    <span class="c1">// check if we already calculated prediction</span>
+    <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="nv">$force_predict</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nv">$positions_query</span> <span class="o">=</span> <span class="nx">pg_query</span><span class="p">(</span><span class="s2">&quot;SELECT extract(&#39;epoch&#39; FROM gps_time)::int as time, gps_lat as latitude, gps_lon as longitude, gps_alt as altitude FROM positions WHERE mission_id = &#39;</span><span class="si">$mission_id</span><span class="s2">&#39; AND vehicle = &#39;&quot;</span><span class="o">.</span><span class="nb">pg_escape_string</span><span class="p">(</span><span class="nv">$vehicle</span><span class="p">)</span><span class="o">.</span><span class="s2">&quot;&#39; AND picture = &#39;&#39; ORDER BY gps_time DESC, sequence DESC, position_id DESC LIMIT 1&quot;</span><span class="p">);</span>
+      <span class="nv">$num_rows</span> <span class="o">=</span> <span class="nb">pg_num_rows</span><span class="p">(</span><span class="nv">$positions_query</span><span class="p">);</span>
+      <span class="k">if</span><span class="p">(</span><span class="nv">$num_rows</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nv">$position</span> <span class="o">=</span> <span class="nb">pg_fetch_assoc</span><span class="p">(</span><span class="nv">$positions_query</span><span class="p">);</span>
+        <span class="nv">$prediction_query</span> <span class="o">=</span> <span class="nx">pg_query</span><span class="p">(</span><span class="s2">&quot;SELECT extract(&#39;epoch&#39; FROM time)::int as time, latitude, longitude, altitude FROM predictions WHERE mission_id = &#39;</span><span class="si">$mission_id</span><span class="s2">&#39; AND vehicle = &#39;</span><span class="si">$vehicle</span><span class="s2">&#39;&quot;</span><span class="p">);</span>
+        <span class="nv">$num_rows</span> <span class="o">=</span> <span class="nb">pg_num_rows</span><span class="p">(</span><span class="nv">$prediction_query</span><span class="p">);</span>
+        <span class="k">if</span><span class="p">(</span><span class="nv">$num_rows</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+          <span class="nv">$prediction</span> <span class="o">=</span> <span class="nb">pg_fetch_assoc</span><span class="p">(</span><span class="nv">$prediction_query</span><span class="p">);</span>
+          <span class="nv">$pred_age</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="nv">$position</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="nv">$prediction</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]);</span>
+
+          <span class="k">if</span> <span class="p">(</span><span class="nv">$debug</span><span class="p">)</span>
+            <span class="k">print</span> <span class="s2">&quot;Current prediction age: </span><span class="si">$pred_age</span><span class="s2"> (&quot;</span><span class="o">.</span><span class="nv">$position</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span><span class="o">.</span><span class="s2">&quot; - &quot;</span><span class="o">.</span><span class="nv">$prediction</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span><span class="o">.</span><span class="s2">&quot;)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+
+          <span class="k">if</span><span class="p">(</span><span class="nb">isset</span><span class="p">(</span><span class="nv">$throttle_predictions</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="nv">$pred_age</span> <span class="o">&lt;</span> <span class="nv">$throttle_predictions</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nv">$debug</span><span class="p">)</span>
+              <span class="k">print</span> <span class="s2">&quot;Prediction throttled: age &lt; </span><span class="si">$throttle_predictions</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+
+            <span class="nx">pg_query</span><span class="p">(</span><span class="s2">&quot;COMMIT&quot;</span><span class="p">);</span>
+            <span class="k">return</span><span class="p">;</span>
+          <span class="p">}</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+    
+    <span class="k">if</span> <span class="p">(</span><span class="nv">$debug</span><span class="p">)</span>
+      <span class="k">print</span> <span class="s2">&quot;Updating prediction...</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+
+    <span class="nv">$stats</span> <span class="o">=</span> <span class="nx">get_stats</span><span class="p">(</span><span class="nv">$mission_id</span><span class="p">,</span> <span class="nv">$vehicle</span><span class="p">);</span>
+    
+    <span class="c1">//print_r($stats);</span>
+    
+    <span class="nv">$descending</span> <span class="o">=</span> <span class="nv">$stats</span><span class="p">[</span><span class="s2">&quot;rate&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span>
+                  <span class="o">&amp;&amp;</span> <span class="nv">$stats</span><span class="p">[</span><span class="s2">&quot;altitude&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="nv">$stats</span><span class="p">[</span><span class="s2">&quot;max_altitude&quot;</span><span class="p">]</span>
+                  <span class="o">&amp;&amp;</span> <span class="nv">$stats</span><span class="p">[</span><span class="s2">&quot;max_altitude&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1000</span>
+                  <span class="o">&amp;&amp;</span> <span class="nv">$stats</span><span class="p">[</span><span class="s2">&quot;min_rate&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">5.0</span><span class="p">;</span> 
+    
+    <span class="k">if</span><span class="p">(</span><span class="nv">$force_descent</span><span class="p">)</span> <span class="p">{</span>              
+      <span class="nv">$descending</span> <span class="o">=</span> <span class="k">true</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="nv">$landed</span> <span class="o">=</span> <span class="nv">$stats</span><span class="p">[</span><span class="s2">&quot;max_altitude&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1000</span>
+              <span class="o">&amp;&amp;</span> <span class="nv">$stats</span><span class="p">[</span><span class="s2">&quot;altitude&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">300</span>
+              <span class="o">&amp;&amp;</span> <span class="nv">$stats</span><span class="p">[</span><span class="s2">&quot;rate&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">1.0</span><span class="p">;</span>
+    
+    <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="nv">$descending</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nv">$ascent_rate</span> <span class="o">=</span> <span class="nv">$stats</span><span class="p">[</span><span class="s2">&quot;rate&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span> <span class="o">?</span> <span class="nv">$stats</span><span class="p">[</span><span class="s2">&quot;rate&quot;</span><span class="p">]</span> <span class="o">:</span> <span class="nv">$default_ascent_rate</span><span class="p">;</span>
+      <span class="k">if</span><span class="p">(</span><span class="nv">$ascent_rate</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="nv">$ascent_rate</span> <span class="o">=</span> <span class="nv">$default_ascent_rate</span><span class="p">;</span>
+      <span class="nv">$descent_rate</span> <span class="o">=</span> <span class="nv">$default_descent_rate</span><span class="p">;</span>
+      <span class="nv">$burst_alt</span> <span class="o">=</span> <span class="nx">max</span><span class="p">(</span><span class="nv">$default_burst_alt</span><span class="p">,</span> <span class="nv">$stats</span><span class="p">[</span><span class="s2">&quot;altitude&quot;</span><span class="p">]);</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+      <span class="nv">$ascent_rate</span> <span class="o">=</span> <span class="nv">$default_ascent_rate</span><span class="p">;</span>
+      <span class="nv">$descent_rate</span> <span class="o">=</span> <span class="o">-</span><span class="nv">$stats</span><span class="p">[</span><span class="s2">&quot;rate&quot;</span><span class="p">];</span>
+      <span class="k">if</span><span class="p">(</span><span class="nv">$descent_rate</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nv">$descent_rate</span> <span class="o">=</span> <span class="nv">$default_descent_rate</span><span class="p">;</span>
+      <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="c1">//$descent_rate = ($descent_rate + sea_level_descent_rate($descent_rate, $stats[&quot;sample_altitude&quot;])) / 2; </span>
+        <span class="nv">$descent_rate</span> <span class="o">=</span> <span class="nx">sea_level_descent_rate</span><span class="p">(</span><span class="nv">$descent_rate</span><span class="p">,</span> <span class="nv">$stats</span><span class="p">[</span><span class="s2">&quot;sample_altitude&quot;</span><span class="p">]);</span>
+      <span class="p">}</span>
+      <span class="nv">$burst_alt</span> <span class="o">=</span> <span class="nv">$stats</span><span class="p">[</span><span class="s2">&quot;max_altitude&quot;</span><span class="p">];</span>
+    <span class="p">}</span>
+
+    <span class="nv">$json</span> <span class="o">=</span> <span class="nx">get_prediction</span><span class="p">(</span><span class="nv">$stats</span><span class="p">[</span><span class="s2">&quot;latitude&quot;</span><span class="p">],</span>
+                           <span class="nv">$stats</span><span class="p">[</span><span class="s2">&quot;longitude&quot;</span><span class="p">],</span>
+                           <span class="nv">$stats</span><span class="p">[</span><span class="s2">&quot;altitude&quot;</span><span class="p">],</span>
+                           <span class="nv">$stats</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">],</span>
+                           <span class="nv">$ascent_rate</span><span class="p">,</span>
+                           <span class="nv">$descent_rate</span><span class="p">,</span>
+                           <span class="nv">$burst_alt</span><span class="p">,</span>
+                           <span class="nv">$descending</span><span class="p">);</span>
+    
+    <span class="c1">//echo $json;</span>
+
+    <span class="nv">$prediction_id</span> <span class="o">=</span> <span class="s2">&quot;DEFAULT&quot;</span><span class="p">;</span>
+    <span class="nv">$prediction_query</span> <span class="o">=</span> <span class="nx">pg_query</span><span class="p">(</span><span class="s2">&quot;SELECT prediction_id FROM predictions WHERE mission_id = &#39;</span><span class="si">$mission_id</span><span class="s2">&#39; AND vehicle = &#39;&quot;</span><span class="o">.</span><span class="nb">pg_escape_string</span><span class="p">(</span><span class="nv">$vehicle</span><span class="p">)</span><span class="o">.</span><span class="s2">&quot;&#39;&quot;</span><span class="p">);</span>
+    <span class="nv">$num_rows</span> <span class="o">=</span> <span class="nb">pg_num_rows</span><span class="p">(</span><span class="nv">$prediction_query</span><span class="p">);</span>
+    <span class="k">if</span><span class="p">(</span><span class="nv">$num_rows</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nv">$prediction_id</span> <span class="o">=</span> <span class="nb">pg_fetch_row</span><span class="p">(</span><span class="nv">$prediction_query</span><span class="p">);</span>
+      <span class="nv">$prediction_id</span> <span class="o">=</span> <span class="p">(</span><span class="nx">int</span><span class="p">)</span> <span class="nv">$prediction_id</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+    <span class="p">}</span> 
+
+    <span class="k">if</span> <span class="p">(</span><span class="nv">$prediction_id</span> <span class="o">!=</span> <span class="s2">&quot;DEFAULT&quot;</span><span class="p">)</span>
+      <span class="nx">pg_query</span><span class="p">(</span><span class="s2">&quot;DELETE FROM predictions WHERE prediction_id=</span><span class="si">$prediction_id</span><span class="s2">&quot;</span><span class="p">);</span>
+
+    <span class="nv">$prediction_query</span> <span class="o">=</span> <span class="nx">pg_query</span><span class="p">(</span><span class="s2">&quot;INSERT INTO predictions (prediction_id, mission_id, vehicle, time, latitude, longitude, altitude, ascent_rate, descent_rate, burst_altitude, descending, landed, data) VALUES (</span><span class="si">$prediction_id</span><span class="s2">, &#39;</span><span class="si">$mission_id</span><span class="s2">&#39;, &#39;&quot;</span><span class="o">.</span><span class="nb">pg_escape_string</span><span class="p">(</span><span class="nv">$vehicle</span><span class="p">)</span><span class="o">.</span><span class="s2">&quot;&#39;, (TIMESTAMP WITH TIME ZONE &#39;epoch&#39; + (INTERVAL &#39;1 second&#39; * &quot;</span><span class="o">.</span><span class="nv">$stats</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span><span class="o">.</span><span class="s2">&quot;)), &#39;&quot;</span><span class="o">.</span><span class="nv">$stats</span><span class="p">[</span><span class="s2">&quot;latitude&quot;</span><span class="p">]</span><span class="o">.</span><span class="s2">&quot;&#39;, &#39;&quot;</span><span class="o">.</span><span class="nv">$stats</span><span class="p">[</span><span class="s2">&quot;longitude&quot;</span><span class="p">]</span><span class="o">.</span><span class="s2">&quot;&#39;, &#39;&quot;</span><span class="o">.</span><span class="nv">$stats</span><span class="p">[</span><span class="s2">&quot;altitude&quot;</span><span class="p">]</span><span class="o">.</span><span class="s2">&quot;&#39;, &#39;</span><span class="si">$ascent_rate</span><span class="s2">&#39;, &#39;</span><span class="si">$descent_rate</span><span class="s2">&#39;, &#39;</span><span class="si">$burst_alt</span><span class="s2">&#39;, &#39;&quot;</span><span class="o">.</span><span class="p">(</span><span class="nv">$descending</span><span class="o">?</span> <span class="s2">&quot;true&quot;</span> <span class="o">:</span> <span class="s2">&quot;false&quot;</span><span class="p">)</span><span class="o">.</span><span class="s2">&quot;&#39;, &#39;&quot;</span><span class="o">.</span><span class="p">(</span><span class="nv">$landed</span><span class="o">?</span> <span class="s2">&quot;true&quot;</span> <span class="o">:</span> <span class="s2">&quot;false&quot;</span><span class="p">)</span><span class="o">.</span><span class="s2">&quot;&#39;, &#39;&quot;</span><span class="o">.</span><span class="nb">pg_escape_string</span><span class="p">(</span><span class="nv">$json</span><span class="p">)</span><span class="o">.</span><span class="s2">&quot;&#39;)&quot;</span><span class="p">);</span>
+     <span class="nx">pg_query</span><span class="p">(</span><span class="s2">&quot;COMMIT&quot;</span><span class="p">);</span>
+
+    <span class="k">if</span><span class="p">(</span><span class="nv">$debug</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">echo</span> <span class="nb">htmlspecialchars</span><span class="p">(</span><span class="nv">$vehicle</span><span class="p">);</span>
+      <span class="k">if</span><span class="p">(</span><span class="nv">$landed</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">echo</span> <span class="s2">&quot; landed</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+      <span class="p">}</span> <span class="k">else</span> <span class="k">if</span><span class="p">(</span><span class="nv">$descending</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">echo</span> <span class="s2">&quot; descending</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+      <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="k">echo</span> <span class="s2">&quot; ascending</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+      <span class="p">}</span>
+      <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="nv">$descending</span><span class="p">)</span>
+        <span class="k">echo</span> <span class="s2">&quot;Ascent Rate: </span><span class="si">$ascent_rate</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+      <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="nv">$landed</span><span class="p">)</span>
+        <span class="k">echo</span> <span class="s2">&quot;Descent Rate: </span><span class="si">$descent_rate</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+      
+      <span class="k">print</span> <span class="s2">&quot;Done, saved prediction (&quot;</span><span class="o">.</span><span class="nv">$stats</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span><span class="o">.</span><span class="s2">&quot;)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
+    <span class="p">}</span>
+
+  <span class="p">}</span>
+<span class="cp">?&gt;</span><span class="x"></span>
+</pre></div>
+</body>
+</html>

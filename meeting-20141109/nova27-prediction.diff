@@ -1,0 +1,31 @@
+diff --git a/testing/test_prediction.py b/testing/test_prediction.py
+index 8aba437..13fe19d 100644
+--- a/testing/test_prediction.py
++++ b/testing/test_prediction.py
+@@ -10,15 +10,19 @@ from tawhiri import solver, models, kml
+ from tawhiri.dataset import Dataset as WindDataset
+ from ruaumoko import Dataset as ElevationDataset
+ 
+-lat0 = 52.5563
+-lng0 = 360 - 3.1970
+-alt0 = 0.0
+-t0 = calendar.timegm(datetime(2014, 2, 19, 15).timetuple())
+-
+-wind = WindDataset.open_latest()
++# first point: 11:57:46,52.254402,0.3014553,7451
++lat0 = 52.254402
++lng0 = 0.3014553
++alt0 = 7451
++t0 = calendar.timegm(datetime(2014, 9, 30, 11, 57, 46).timetuple())
++
++ds_time = datetime(2014, 9, 30, 6)
++wind = WindDataset(ds_time, directory=".")
+ elevation = ElevationDataset()
+ 
+-stages = models.standard_profile(5.0, 30000, 5.0, wind, elevation)
++# burst: 12:53:05,52.270863,0.6904026,24366
++# time until burst: 3319s; dalt: 16915
++stages = models.standard_profile(5.09641, 24366, 4.0, wind, elevation)
+ rise, fall = solver.solve(t0, lat0, lng0, alt0, stages)
+ 
+ assert rise[-1] == fall[0]

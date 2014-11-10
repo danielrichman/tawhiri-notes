@@ -1,0 +1,26 @@
+diff --git a/tawhiri/models.py b/tawhiri/models.py
+index 63e3f1f..56d9621 100644
+--- a/tawhiri/models.py
++++ b/tawhiri/models.py
+@@ -177,7 +177,7 @@ def standard_profile(ascent_rate, burst_altitude, descent_rate,
+ 
+     model_down = make_linear_model([make_drag_descent(descent_rate),
+                                     make_wind_velocity(wind_dataset)])
+-    term_down = make_elevation_data_termination(elevation_dataset)
++    term_down = sea_level_termination
+ 
+     return ((model_up, term_up), (model_down, term_down))
+ 
+diff --git a/testing/test_prediction.py b/testing/test_prediction.py
+index 8aba437..5cadb32 100644
+--- a/testing/test_prediction.py
++++ b/testing/test_prediction.py
+@@ -16,7 +16,7 @@ alt0 = 0.0
+ t0 = calendar.timegm(datetime(2014, 2, 19, 15).timetuple())
+ 
+ wind = WindDataset.open_latest()
+-elevation = ElevationDataset()
++elevation = None
+ 
+ stages = models.standard_profile(5.0, 30000, 5.0, wind, elevation)
+ rise, fall = solver.solve(t0, lat0, lng0, alt0, stages)

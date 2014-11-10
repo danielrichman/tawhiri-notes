@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>A brief summary of the Predictor Hackathon (2014-11-09)</title>
+    <link href="../css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="../css/misc.css" rel="stylesheet" media="screen">
+</head>
+<body>
+
+<h1>A brief summary of the Predictor Hackathon (2014-11-09)</h1>
+
+<h2>Installing &amp; Datasets</h2>
+
+<p>We tried to get the predictor set up and running on everyone’s laptops (or linux VMs inside laptops). It’s worth noting that you’ll need a 64 bit computer; several things larger than 4GB are involved.</p>
+
+<p>We were successful in getting the Python installed.
+The <a href="https://github.com/cuspaceflight/tawhiri/blob/master/README.md">README</a> provides the basics.
+You probably do not need to bother with the downloader, just the first section.
+We’re nominally targeting Python3.3/3.4 but are so far compatible with Python2.</p>
+
+<p>tl;dr <code>git checkout; virtualenv venv; source venv/bin/activate; pip install -r requirements.txt</code></p>
+
+<p>Next, you need two datasets; each is ~8GB:</p>
+
+<ul>
+<li>elevation dataset (altitude of ground level for each point on earth)</li>
+<li>wind dataset</li>
+</ul>
+
+<p>Downloading these at the meeting proved difficult due to poor wifi.</p>
+
+<p>You can grab a wind dataset from <a href="http://predict.habhub.org/datasets/">this server</a> (pick the file named YYYYMMDDHH, not the “gribmirror”).
+It’s big. If you get billed for lots of bandwidth usage at your college, you could download in CUED—they probably won’t care. Alternatively, transfer within Cambridge is probably free, and I can host that file from my desktop if necessary; just ask.</p>
+
+<p>You can grab an elevation dataset by running the <code>ruaumoko-download</code> command, which will be available after having run <code>pip install -r requiements.txt</code> from above.
+By default it will try to put it in <code>/srv</code>. You can tell it to put it somewhere else with the first command line argument, e.g. <code>ruaumoko-dataset ./ruaumoko-dataset</code>.
+It’s compressed so actually comes to about a 1G download.</p>
+
+<p>If downloading is a problem, the following substitutes may help:</p>
+
+<ul>
+<li><a href="http://predict.cusf.co.uk/datasets/archive/2014093006-UK">This 20MB file</a> contains the wind data for the UK only from some random day I picked in September
+and <a href="http://predict.cusf.co.uk/datasets/archive/unpack.native">this program</a> <a href="https://github.com/danielrichman/tawhiri-tools/tree/master/dataset-archive">(src)</a> will unpack it into a “sparse file” that only uses 500MB on disk, but “looks like” a 8GB wind dataset with zeros everywhere that isn’t the UK.
+You will have a sad time if you run a prediction that leaves the UK on this dataset.</li>
+<li>You can switch off ground-altitude-elevation-stuff landing and just have the prediction terminate at sea level instead. If you’re doing accuracy analysis, you probably don’t want to do this, because the difference is significant.
+<a href="disable-elev.diff.html">This diff</a> will disable use of the elevation dataset.</li>
+</ul>
+
+<h2>Running the predictor, and getting at the output</h2>
+
+<p><a href="https://github.com/cuspaceflight/tawhiri/blob/master/testing/test_prediction.py">This file, test_prediction.py</a> shows you how to invoke the predictor.</p>
+
+<p>In reality, the predictor will be invoked via the <a href="https://github.com/cuspaceflight/tawhiri/blob/master/tawhiri/api.py">HTTP API</a> which if you squint, looks the same-ish (it calls <code>models.standard_profile</code>, <code>solver.solve</code>, ...) except it uses parameters from the HTTP request, instead of hardcoded ones.
+If you’re working on accuracy or live predictions then I assume you’re going to want to write a script that dumps a prediction to CSV, or computes some metric or whatever, and the <code>test_prediction.py</code> script would be a good starting point.</p>
+
+<p>You need to tell it which wind dataset to use, and where to find it.
+As shipped, it searches for the “latest” dataset in a magic directory. This is probably not what you want. <a href="dataset-location.diff.html">This diff</a> shows you how to modify it to do what you want.</p>
+
+<p>Finally, run <code>python3 testing/test_prediction.py</code> (or just “python”, if you’re using py2).</p>
+
+<p>It produces two files in the current working directory, that is, the directory you were in when you ran the command.
+One of them is a javascript file that just contains <code>var data = [list of lat, lon tuples];</code>
+This is suitable for use with <a href="https://github.com/danielrichman/tawhiri-tools/tree/master/quick-map">this quick Google Maps hack</a>, which we were using before we had the proper UI.
+The other is a kml file, which you can load into Google Earth.
+It’s up to you what you use. Both of them are only really suitable for eyeballing.</p>
+
+<p>If, say, you wanted to modify that test script to output to CSV so you can load it into MATLAB and play with it, you might do <a href="csv.diff.html">something like this</a>.</p>
+
+<h2>How it works</h2>
+
+<p>If you want to work out how it works, following the functions <code>test_prediction.py</code> calls is probably a good start.</p>
+
+<p>The <a href="http://tawhiri.readthedocs.org/en/latest/predictor.html">tawhiri docs</a> summarise some of what we discussed.</p>
+
+<p>I’m very happy to answer questions. Please do email if it’s preventing you from getting started! I’m also occasionally around CUED or the Computer Lab.</p>
+
+<h2>Getting at specific datasets.</h2>
+
+<p>The above dataset you downloaded is perhaps not useful to what you’re doing if you want to compare it to a past balloon flight (will get to that in a second).</p>
+
+<p>I’ve been saving a cut-out of the UK for the last few months, they’re <a href="http://predict.cusf.co.uk/datasets/archive/">here</a>, and <a href="http://predict.cusf.co.uk/datasets/archive/unpack.native">this program</a> (as mentioned above) unpacks them</p>
+
+<p>We’re going to (at some point) produce a predictor that can use the UK cut-outs directly, since this will be a lot faster if you want to automate or run predictions on many past datasets, and won’t use as much disk space (as mentioned above, they’re 500MB unpacked, due to overhead of sparse files).</p>
+
+<h2>Analysis: comparing to balloon flights.</h2>
+
+<p>All of our balloons fly with trackers on them that report positions about once every 15 seconds. In fact, there’s a thriving amateur community in the UK that does similar flights with compatible trackers.
+There’s a centralised system (with which CUSF has been fairly heavily involved) that collates submissions from people with radio receivers all over the country and stores them in a <a href="http://habitat.habhub.org/">database “habitat”</a> and plots them on a map <a href="http://spacenear.us">“spacenear.us”</a>.</p>
+
+<p>You can get at past data <a href="http://habitat.habhub.org/ept">here</a>:
+It exports to CSV, JSON and KML. You could for example load a prediction and an exported KML trace into Google earth (only good for eyeball comparison).</p>
+
+<p>Our last flight was “Nova 27”. If I search for that, select the JOEY payload, tick “time, latitude, longitude, altitude” and click CSV <a href="nova27.csv">I get this</a>.
+The first point is 7km up since we weren’t uploading as we let go, which is unfortunate. Most flights will be complete.</p>
+
+<p>At this point you’ll note that the file I mentioned above (<code>2014093006-UK</code>) wasn’t just some random day…
+If we <a href="nova27-prediction.diff.html">set up the predictor</a> to use this dataset, with the right initial conditions, divine knowledge of the ascent rate and burst altitude, and a guess at the right magic number to give the descent rate model…
+then we get this <a href="nova27-prediction.kml">kml</a> <a href="nova27.jpg">jpg</a> <a href="nova27b.jpg">jpg2</a>.</p>
+
+<p>If I use the 12Z dataset and start a couple of minutes in, I get <a href="nova27-12z.jpg">this</a>.</p>
+
+<p>Not bad, but could be better, especially since I knew the exact burst alt.</p>
+
+<p>If you want to do more interesting/automated things (say, look through the past few months of flights, identify which are in the UK, automatically retrieve the relevant wind UK datasets, run predictions…) you may want to interact with the database directly. This isn’t too bad; let me know.</p>
+
+<h2>Live predictor</h2>
+
+<p>The live predictor runs on abovementioned <a href="http://spacenear.us/tracker/">spacenear.us</a>
+The tracker is a webpage, not created by CUSF, that uses the backend (“habitat”). The history of these things is quite long…</p>
+
+<p>Basically, the data used above is available live; that’s the main point of the system.
+Given a flight in progress, the live predictor attempts to infer</p>
+
+<ul>
+<li>ascent/descent rate</li>
+<li>whether it’s burst yet or not</li>
+</ul>
+
+<p>and it’s given the burst altitude in advance.</p>
+
+<p>This uses the old and busted predictor; we want to use the new one, and moreover, there are a /lot/ of improvements that could be made to the above “inference”.</p>
+
+<p><a href="predict.php.html">This PHP</a> is the current “live predictor” and may induce nausea (it just sets up the things and dials out to the C binary).</p>
+
+<p>Some ideas</p>
+
+<ul>
+<li>rewrite in Python</li>
+<li>efficiency: you can update a linear regression live</li>
+<li>inference of descent rate: dubious. Perhaps want to transform it to match the shape of the model we have, and then linear regression? I don’t know.</li>
+</ul>
+
+<p>Advanced ideas?</p>
+
+<ul>
+<li>If you know the balloon type and payload weight, then you can infer the burst altitude from the ascent rate, and vice versa. People normally know the weight of their stuff fairly accurately, but /don’t/ know the ascent rate or burst altitude since accurately filling balloons with He is hard.
+However, after launch we /have/ data for the ascent rate, so could infer the (otherwise high variance) burst altitude from it.</li>
+</ul>
+
+<p>To play, I suggest you ignore integration with the relevant databases and where to put the results for now. This requires knowledge of various existing systems and is probably going to be boring.</p>
+
+<p>Instead, use the above mentioned stuff to acquire a flight, forget everything but the first N lines, and try and write something that would work as if it were run live.</p>
+
+<h2>Misc</h2>
+
+<p>If you modify any .pxd files, you need to run the line mentioned in the README again:</p>
+
+<pre><code>python setup.py build_ext --inplace
+</code></pre>

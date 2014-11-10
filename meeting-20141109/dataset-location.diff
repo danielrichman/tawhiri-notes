@@ -1,0 +1,19 @@
+diff --git a/testing/test_prediction.py b/testing/test_prediction.py
+index 8aba437..3fc43db 100644
+--- a/testing/test_prediction.py
++++ b/testing/test_prediction.py
+@@ -13,10 +13,11 @@ from ruaumoko import Dataset as ElevationDataset
+ lat0 = 52.5563
+ lng0 = 360 - 3.1970
+ alt0 = 0.0
+-t0 = calendar.timegm(datetime(2014, 2, 19, 15).timetuple())
++t0 = calendar.timegm(datetime(2014, 11, 9, 15).timetuple())
+ 
+-wind = WindDataset.open_latest()
+-elevation = ElevationDataset()
++ds_time = datetime(2014, 11, 9, 6)
++wind = WindDataset(ds_time, directory="/home/daniel/tawhiri/datasets")
++elevation = ElevationDataset(filename="/home/daniel/tawhiri/datasets/ruaumoko-dataset")
+ 
+ stages = models.standard_profile(5.0, 30000, 5.0, wind, elevation)
+ rise, fall = solver.solve(t0, lat0, lng0, alt0, stages)
